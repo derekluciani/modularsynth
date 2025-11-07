@@ -7,19 +7,19 @@ Build a fully functional, **React-based Modular Synthesizer App** according to t
 * You are an expert software engineer and UI designer specializing in **audio software**, **Web Audio API**, and **React** UI.
 * You will act as an **autonomous development agent**, responsible for planning, structuring, designing, building the entire app.
 * You will produce code that is **complete, working code** – no pseudocode or stubs.
-* You will structure the code architecture so that it can support module extensibility.
+* You will structure the code architecture so that it can support module extensibility in the future.
 * You will maintain a consistent **file/folder structure** throughout all outputs.
-* You will consistenly apply semantic naming conventions so your code is easy to read.
+* You will consistenly apply semantic-first naming conventions in your code so it is easy for others to read.
 * You will add **concise inline comments** explaining the purpose of key sections.
-* You will execute all requested app refinements.
+* You will execute all app refinement requests.
 
 ## Success Criteria
-* Produce a functionally complete, modular audio synthesizer application that runs in a modern web browser.
+* Produce a functionally complete, performant, audio synthesizer application that runs smoothly in a modern web browser.
 * Each audio module functions independently but supports patchable input/output routing.
 * Parameter controls are logically organized, labeled and easy to use.
-* User changes to parameter controls must respond in real time.
-* The initial state of the app has the synthesizer set to a pre-configured "default patch" routing that produces audible sound. Specs provided below.
-* The appearance of the app has a considered design system that demonstrates a clear and consistent hierarchy of applied styles.
+* User-controlled changes to parameter values must respond in real time.
+* The synthesizer's initial state must be set to a "default patch" routing configuration that produces audible sound. Specs provided below.
+* The app has a considered visual design system that demonstrates a clear and consistent hierarchy of applied styles.
 * The app is always **runnable** with standard commands:
    `npm install`
    `npm run dev`  
@@ -47,16 +47,16 @@ Implement independent modules as React components:
 8. LFO 2
 9. Noise
 10. Sample & Hold
-11. Overdrive
+11. Distortion
 12. Delay
 13. Amplifier (Master Volume Output)
 
 ## Module Parameters
 **Table data:**
-| Module | Parameter | Value | API Notes | UI Type |
+| Module | Parameter | Values | API Notes | UI Type |
 |---|---|---|---|---|
-| Oscillator | Pitch | 100Hz–10kHz | uses OscillatorNode | Numeric Input |
-| Oscillator | Note | C–B (12 notes/1 octave starting at C/100hz–B/188.77hz) | Implement a lookup table for all 12-note frequency values | Drop Menu |
+| Oscillator | Pitch | 100Hz–10kHz (Integer scale) | uses OscillatorNode | Numeric Input |
+| Oscillator | Note | C–B (12 notes/1 octave starting at C/100Hz–B/189Hz) | Implement as a lookup table (values defined in next section) | Drop Menu |
 | Oscillator | Wave Shape | Square, Saw, Triangle, Sine  | N/A | Drop Menu |
 | Oscillator | Pulsewidth | Rate | Modulates Oscillator waveform width | Slider |
 | Filter | Cutoff | High Pass, Band Pass, Low Pass | Uses BiquadFilterNode | Drop Menu |
@@ -70,8 +70,29 @@ Implement independent modules as React components:
 | Sample & Hold | Rate | Random modulation produced by integrated noise module (hidden from user) | Slider |
 | Distortion | Gain | 0-100 | uses WaveShaperNode | Slider |
 | Distortion | Level | 0-100 | uses GainNode | Slider |
+| Delay | Time | 0-2sec | uses DelayNode | Slider |
 | Amplifier | Volume | 0-100 | uses GainNode, AudioDestinationNode | Slider |
-| Amplifier | Mute | True, False | controls active/inactive state of Amplifier module| Checkbox |
+
+### Oscillator Parameters
+* Pitch and Note are two separate parameters that sample from the same Frequency value range. Here is the conditional logic to be implemented:
+     * If a selected Pitch value matches a Note value, and vis versa, both parameter values are displayed. (ie. Pitch: 141Hz, Note: F#)
+     * If a selected Pitch value does not match a Note value, the Note value is set to 'null' and displayed as '--' . (ie. Pitch: 440Hz, Note: --)
+     * If the app is in its initial/default state, then all Oscillator Pitch values are set to "440Hz" and Note values set to "null".
+* **Note parameter values / Lookup table:**
+| Semitone | Frequency | Value |
+|---|---|---|
+| Root | 100Hz | C |
+| 1 | 106Hz | C# / Db |
+| 2 | 112Hz | D |
+| 3 | 119Hz | D# / Eb |
+| 4 | 126Hz | E |
+| 5 | 134Hz | F |
+| 6 | 141Hz | F# |
+| 7 | 150Hz | G |
+| 8 | 159Hz | G# |
+| 9 | 168Hz | A |
+| 10 | 178Hz | A# |
+| 11 | 189Hz | B |
 
 ## Module Patching System
 * **Purpose:** User-controlled signal routing between modules.
@@ -87,7 +108,7 @@ Implement independent modules as React components:
      * Oscillator 1 → Filter 1 → Envelope 1 → Overdrive → Amplifier
      * LFO 1 → Filter 1
      * Envelope 1 → Filter 1
-* Oscillator 1 pitch parameter set to 440Hz, wave shape parameter set to Saw.
+* Oscillator 1 Pitch parameter set to '440Hz', Wave Shape parameter set to 'Saw'.
 * Set all other module parameters to their mid point value.
 * Show a dismissable tooltip anchored to the Oscillator 1 output connecton with message "Reconfigure the module connections to change the sound!"
 
@@ -159,7 +180,7 @@ Includes:
 8. Apply visual preferences or defaults.
 9. Comment code for clarity and future extensibility.
 
-# END OF REQUIREMENTS ---------------------------------------------------------------------- 
+# !END OF REQUIREMENTS 
 
 <!-- ## Future Extensibility Ideas (DO NOT IMPLEMENT)
 * Add effects modules (Delay, Reverb)
