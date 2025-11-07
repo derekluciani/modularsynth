@@ -27,10 +27,11 @@ Build a fully functional, **React-based Modular Synthesizer App** according to t
 # PROJECT REQUIREMENTS
 
 ## Tech Stack
-* **Frontend Framework:** Vite + React UI Components
+* **Frontend Framework:** Vite + React
 * **State Management:** React Context API
 * **Audio Engine:** Web Audio API
-* **Styling:** Tailwind CSS
+* **UI Component Base:** Shadcn/ui
+* **UI Styles:** Tailwind CSS (v4+)
 * **UI Animation:** Framer Motion
 
 ## Sound Sources
@@ -53,25 +54,30 @@ Implement independent modules as React components:
 
 ## Module Parameters
 **Table data:**
-| Module | Parameter | Values | API Notes | UI Type |
+| Module | Parameter | Values | API Notes | UI Component |
 |---|---|---|---|---|
-| Oscillator | Pitch | 100Hz–10kHz (Integer scale) | uses OscillatorNode | Numeric Input |
-| Oscillator | Note | C–B (12 notes/1 octave starting at C/100Hz–B/189Hz) | Implement as a lookup table (values defined in next section) | Drop Menu |
-| Oscillator | Wave Shape | Square, Saw, Triangle, Sine  | N/A | Drop Menu |
-| Oscillator | Pulsewidth | Rate | Modulates Oscillator waveform width | Slider |
-| Filter | Cutoff | High Pass, Band Pass, Low Pass | Uses BiquadFilterNode | Drop Menu |
-| Filter | Frequency | ??? | ??? | Slider |
-| Envelope | Attack | 0-100 | Controls GainNode | Slider |
-| Envelope | Decay | 0-100 | Controls GainNode | Slider |
-| Envelope | Sustain | 0-100 | Controls GainNode | Slider |
-| Envelope | Release | 0-100 | Controls GainNode | Slider |
-| LFO | Frequency | 0.1Hz–20Hz | Modulates target params | Slider |
-| LFO | Wave Shape | Square, Saw, Triangle, Sine  | Modulates target params | Drop Menu |
-| Sample & Hold | Rate | Random modulation produced by integrated noise module (hidden from user) | Slider |
-| Distortion | Gain | 0-100 | uses WaveShaperNode | Slider |
-| Distortion | Level | 0-100 | uses GainNode | Slider |
-| Delay | Time | 0-2sec | uses DelayNode | Slider |
-| Amplifier | Volume | 0-100 | uses GainNode, AudioDestinationNode | Slider |
+| Oscillator | Pitch | 100Hz–10kHz (Integers only, log scale) | Uses OscillatorNode.frequency | Slider |
+| Oscillator | Note | C–B (100Hz–189Hz base octave) | Implement as a lookup table (values are defined in next section) | Drop Menu |
+| Oscillator | Octave | x1, x2, x3 | Multiplies base pitch frequency (f × 2ⁿ) | Radio Group |
+| Oscillator | Wave Shape | Sine, Square, Sawtooth, Triangle | Uses OscillatorNode.type | Drop Menu |
+<!-- | Oscillator | Pulsewidth | Rate | 0.1–20 Hz (log scale) | Modulates width of Oscillator |  waveform | Slider | -->
+| Filter | Type | Lowpass, Bandpass, Highpass | Uses BiquadFilterNode.type | Drop Menu |
+| Filter | Cutoff Frequency | 60Hz-12kHz | Uses BiquadFilterNode.frequency.value | Slider |
+| Envelope | Attack | 1ms–5s (log scale) | Controls GainNode.gain via setTargetAtTime or linearRampToValueAtTime | Slider |
+| Envelope | Decay | 1ms–5s (log scale) | Same as Decay | Slider |
+| Envelope | Sustain | 0-1 (linear scale)| Sets sustain level of gain | Slider |
+| Envelope | Release | 1ms–5s (log scale) | Controls release curve | Slider |
+| LFO | Frequency | 0.1Hz–20Hz (log scale) | Modulates assigned parameter via AudioParam automation | Slider |
+| LFO | Wave Shape | Sine, Square, Sawtooth, Triangle | Generated via OscillatorNode | Drop Menu |
+| Noise | Level | 0-1 (linear scale) | Implement by creating a looping random buffer, type: White noise | Slider |
+| Sample & Hold | Rate | 0.1-20Hz (log scale) | Implement with internal noise + AudioWorklet | Slider |
+| Sample & Hold | Level | 0-1 (linear scale) | Output scaling | Slider |
+| Distortion | Gain | 0-1 (linear scale) | Uses WaveShaperNode curve shaping | Slider |
+| Distortion | Level | 0-1 (linear scale) | Uses GainNode after distortion | Slider |
+| Delay | Time | 0-2s (linear scale) | Uses DelayNode.delayTime.value | Slider |
+| Delay | Feedback | 0-0.9 (linear scale) | Add feedback path using GainNode | Slider |
+| Amplifier | Volume | 0-1 (linear scale) | Final stage before AudioDestinationNode | Slider |
+| Amplifier | Pan | -1(L) – +1(R) | Uses StereoPannerNode | Slider (Default to center position: 0) |
 
 ### Oscillator Parameters
 * Pitch and Note are two separate parameters that sample from the same Frequency value range. Here is the conditional logic to be implemented:
@@ -109,6 +115,7 @@ Implement independent modules as React components:
      * LFO 1 → Filter 1
      * Envelope 1 → Filter 1
 * Oscillator 1 Pitch parameter set to '440Hz', Wave Shape parameter set to 'Saw'.
+* Oscillator Octave parameter set to 'x1'.
 * Set all other module parameters to their mid point value.
 * Show a dismissable tooltip anchored to the Oscillator 1 output connecton with message "Reconfigure the module connections to change the sound!"
 
