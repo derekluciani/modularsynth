@@ -60,7 +60,6 @@ Implement independent modules as React components:
 | Oscillator | Note | C–B (100Hz–189Hz base octave) | Implement as a lookup table (values are defined in next section) | Drop Menu |
 | Oscillator | Octave | x1, x2, x3 | Multiplies base pitch frequency (f × 2ⁿ) | Radio Group |
 | Oscillator | Wave Shape | Sine, Square, Sawtooth, Triangle | Uses OscillatorNode.type | Drop Menu |
-<!-- | Oscillator | Pulsewidth | Rate | 0.1–20 Hz (log scale) | Modulates width of Oscillator |  waveform | Slider | -->
 | Filter | Type | Lowpass, Bandpass, Highpass | Uses BiquadFilterNode.type | Drop Menu |
 | Filter | Cutoff Frequency | 60Hz-12kHz | Uses BiquadFilterNode.frequency.value | Slider |
 | Envelope | Attack | 1ms–5s (log scale) | Controls GainNode.gain via setTargetAtTime or linearRampToValueAtTime | Slider |
@@ -189,7 +188,8 @@ Includes:
 
 # !END OF REQUIREMENTS 
 
-<!-- ## Future Extensibility Ideas (DO NOT IMPLEMENT)
+(DO NOT IMPLEMENT ANYTHING BELOW THIS POINT)
+<!-- ## Future Extensibility Ideas
 * Add effects modules (Delay, Reverb)
 * Save/load custom patches
 * Add more presets to the "Default Patch" list
@@ -197,3 +197,6 @@ Includes:
 * Add a sequencer or mod matrix
 * Add note triggering via keyboard input
 * Support MIDI CC mapping to parameters -->
+
+<!-- Archived ideas:
+| Oscillator | Pulsewidth | Rate | 0.1–20 Hz (log scale) | Modulates width of Oscillator |  waveform | Slider | -->
