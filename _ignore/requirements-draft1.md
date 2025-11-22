@@ -1,3 +1,7 @@
+# This version captures the first draft!
+
+-----
+
 # LLM ALIGNMENT
 
 ## Objective
