@@ -16,7 +16,7 @@
 
 ## Success Criteria  
 * The synthesizer is fully functional in modern browsers.  
-* Each audio module functions independently and supports patchable input/output connections.  
+* Audio modules function independently and support patchable connections.  
 * All module parameter values respond in real time.  
 * The initial state of the synthesizer is loaded with the **default patch**. 
 * The app runs with command: `npm run dev` 
@@ -30,9 +30,9 @@
 
 ## Audio System  
 * The synthesizer is composed of **independent audio modules**.  
-* Modules are React components that register as an `AudioNode` within single shared instance: `const audioCtx = new AudioContext()`, managed inside an `AudioContextProvider`.
+* Modules are React components that register as an `AudioNode` within a single shared instance `const audioCtx = new AudioContext()` and managed inside an `AudioContextProvider`.
 * Independent `AudioNode` and `AudioParam` can be connected via the **Source/Destination interface**.
-* **AudioWorklet:**Custom processors (like the Random module) must be loaded asynchronously from a separate file (e.g., /processors/random-processor.js)
+* **AudioWorklet:** Custom processors (like the Random module) must be loaded asynchronously from a separate file (e.g., `/processors/random-processor.js`)
 
 ## Module Architecture
 All modules are self-contained components that include audio logic and UI.
@@ -109,7 +109,7 @@ Note: _isOutputSource_ refers to whether this specific parameter/node can send s
 ## Module Connection Patch Bay
 The user will have the ability to connect/disconnect modules via an interactive "Patch Bay" (List of active connections). A 'Source' Select component will pair with a 'Destination' Select component.
 
-**Sources (Outputs):** _(Only AudioNodes can be sources)_
+**Sources (Outputs):** _(only AudioNodes can be sources)_
   - Osc 1, Osc 2, Osc 3, Osc 4
   - LFO 1, LFO 2
   - Filter 1, Filter 2
@@ -117,7 +117,7 @@ The user will have the ability to connect/disconnect modules via an interactive 
   - Delay 1
   - Amp
 
-**Destinations (Inputs):** _(Can be AudioNodes OR AudioParams)_
+**Destinations (Inputs):** _(can be AudioNodes OR AudioParams)_
 - Nodes:
   - Osc 1, Osc 2, Osc 3, Osc 4 (FM input if applicable, or unused)
   - Filter 1, Filter 2
@@ -136,10 +136,10 @@ The user will have the ability to connect/disconnect modules via an interactive 
   * **Paired Source and Destination values cannot be the same** (eg. Osc 1 → Osc 1). If the user selects a Destination and it matches the Source, display the validation message: _"Source and destination cannot be the same"_. If the user changes the Source or Destination and the values no longer match, remove the validation message.
 
 ### UI
-- Create a button that appears next to an established Source/Destination pairing. This button will enable the user to easily "Remove connection". When clicked, the button disapears and the values within both input fields reset to the default placeholder.  
+- Create a button that appears next to each established Source/Destination pairing. This button will enable the user to easily "Remove connection". When clicked, the button disapears and the values within both input fields reset to the default placeholder.  
 
 ## Default Routing
-These are the default connections that a user will expect to have in place when the app is launched:
+These are the default connections that a user will expect to have when the app is launched:
 * LFO 1 → Osc 1 Pitch
 * Osc 1 → Filter 1
 * Osc 2 → Filter 1 
@@ -147,7 +147,7 @@ These are the default connections that a user will expect to have in place when 
 * Amp → Destination (AudioOut)
 
 ### UI
-- Create a button that enables the user to "Restore default patch". When clicked, all existing connection values reset to the match the 'Default Routing' values.
+- Create a button that enables the user to "Restore default patch". When clicked, all existing connection values reset to match the 'Default Routing' values.
 
 ## Default Parameter Values
 These are the expected default values:  
@@ -166,48 +166,43 @@ These are the expected default values:
 ## App Folder Structure 
 - /public
   - processors/
-    - random-processor.js // AudioWorklet code
+    - random-processor.js _// AudioWorklet code_
 - /src
   - components/
     - modules/
-      - Oscillator.tsx
-      - ...
-    - primitives/ _// move shadcn components here_
-      - Slider.tsx
-      - ...
-    - PatchBay.tsx // UI for connections
+    - primitives/ _// shadcn components here_
+    - PatchBay.tsx _// UI for 'connections'_
   - context/
     - AudioContextProvider.tsx
   - audio/
     - patching.ts _// connect/disconnect logic_
     - nodes.ts _// node factory utilities_
-    - worklets.ts // worklet loading util
+    - worklets.ts _// worklet loading util_
     - utils.ts
   - styles/
     - tailwind.css
 - App.tsx
 
 # App Development Process & Task Checklist
-Please implement each task and check each one with an '[x]' once they are completed:
+Please implement each task below and mark each one with an '[x]' once they are completed.
 ## Phase 1 - Setup & Core Engine
-[ ] Review all information in this document  
-[ ] Scaffold Vite + React + Tailwind + shadcn/ui [(Follow this installation process)](/Users/derekluciani/repo/modularsynth/scaffoldShadcnTailwind4.md)  
-[ ] Create folder structure (ensure `public/processors/random-processor.js` exists)
-[ ] Implement global `AudioContextProvider` (State, Context creation, AudioWorklet loading)
-[ ] Implement audio graph logic (Connect/Disconnect/Patching functions)  
-[ ] Build reusable `useAudioModule` hook
+- [x] Review all information in this document
+- [x] Scaffold Vite + React + Tailwind + shadcn/ui [(Follow this installation process)](/Users/derekluciani/repo/modularsynth/scaffoldShadcnTailwind4.md) [x] Create folder structure (ensure `public/processors/random-processor.js` exists)
+- [x] Implement global `AudioContextProvider` (State, Context creation, AudioWorklet loading)
+- [x] Implement audio graph logic (Connect/Disconnect/Patching functions)  
+- [x] Build reusable `useAudioModule` hook
 ## Phase 2 - Vertical Slice (Proof of Concept)  
-[ ] Implement **Oscillator** and **AudioOut** modules only
-[ ] Register these modules in `AudioContextProvider` 
-[ ] Verify: Are you able to manually connect Osc → AudioOut and register an audible sound level (expected freq range: 20hz-16kHz)? (NOTE: _Fix all core bugs here!_)
+- [x] Implement **Oscillator** and **AudioOut** modules only
+- [x] Register these modules in `AudioContextProvider` 
+- [x] Verify: Are you able to manually connect Osc → AudioOut and register an audible sound level? (NOTE: _Fix any core bugs here!_)
 ## Phase 3 - Full Module Implementation
-[ ] Implement remaining core modules (Amp, Filter, LFO, Delay)
-[ ] Implement **Random** module (ensure AudioWorklet communication works)
-[ ] Implement the **Patch Bay** UI component (Global connection manager)
+- [ ] Implement remaining core modules (Amp, Filter, LFO, Delay)
+- [ ] Implement **Random** module (ensure AudioWorklet communication works)
+- [ ] Implement the **Patch Bay** UI component (Global connection manager)
 ## Phase 4 - Integration & Polish
-[ ] Apply default routing logic & "Restore default patch" reset action 
-[ ] Verify default routing produces audible sound on app load 
-[ ] Apply visual design specs provided here:
-[ ] Final QA: Measure against **Success Criteria**
+- [ ] Apply default routing logic & "Restore default patch" reset action 
+- [ ] Verify default routing produces audible sound on app load 
+- [ ] Apply visual design specs provided here:
+- [ ] Final QA: Measure against **Success Criteria**
 
 # ! End of Document
