@@ -172,7 +172,7 @@ These are the expected default values:
 - /src
   - components/
     - modules/
-    - primitives/ _// shadcn components here_
+    - ui/
     - PatchBay.tsx _// UI for 'connections'_
   - context/
     - AudioContextProvider.tsx
@@ -203,10 +203,18 @@ Please implement each task below and mark each one with an '[x]' once they are c
 - [x] Implement **Random** module (ensure AudioWorklet communication works)
 - [x] Implement the **Patch Bay** UI component (Global connection manager)
 ## Phase 4 - Integration & Polish
+<<<<<<< HEAD
+- [ ] Review the entire codebase. Ensure there are no logic flaws, functionality issues or bugs. Move to next task if none are found.
+- [ ] Apply default routing logic & "Restore default patch" reset action 
+- [ ] Verify default routing produces audible sound on app load 
+- [ ] Finish all UI component and page layout design
+- [ ] Final QA: Measure against **Success Criteria**
+=======
 - [x] Apply default routing logic & "Restore default patch" reset action 
 - [x] Verify default routing produces audible sound on app load 
 - [x] Create the entire visual design layout based on this Figma Design: @https://www.figma.com/design/bUeKCCUdZ12dsTo92fUYPc/Modular-Synth--Designs-?node-id=66-377&m=dev
 - [x] Verify: All UI is functionally complete
 - [x] Final QA: Measure against **Success Criteria**
+>>>>>>> main
 
 # ! End of Document

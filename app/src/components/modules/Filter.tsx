@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+=======
 import React, { useEffect, useState, useMemo } from 'react';
+>>>>>>> main
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -23,6 +27,10 @@ export const Filter: React.FC<FilterProps> = ({ id, name, defaultValues }) => {
   const [type, setType] = useState<BiquadFilterType>(defaultValues?.type ?? 'lowpass');
 
   const [nodes, setNodes] = useState<{ filter: BiquadFilterNode } | null>(null);
+<<<<<<< HEAD
+  const nodesRef = useRef<{ filter: BiquadFilterNode } | null>(null);
+=======
+>>>>>>> main
 
   useEffect(() => {
     if (!audioCtx) return;
@@ -32,6 +40,10 @@ export const Filter: React.FC<FilterProps> = ({ id, name, defaultValues }) => {
     filter.frequency.value = cutoff;
     filter.Q.value = res;
 
+<<<<<<< HEAD
+    nodesRef.current = { filter };
+=======
+>>>>>>> main
     setNodes({ filter });
 
     return () => {
@@ -47,12 +59,26 @@ export const Filter: React.FC<FilterProps> = ({ id, name, defaultValues }) => {
   }, [type, nodes]);
 
   useEffect(() => {
+<<<<<<< HEAD
+    if (nodes && audioCtx) {
+      nodes.filter.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.01);
+=======
     if (nodes) {
       nodes.filter.frequency.setTargetAtTime(cutoff, audioCtx!.currentTime, 0.01);
+>>>>>>> main
     }
   }, [cutoff, audioCtx, nodes]);
 
   useEffect(() => {
+<<<<<<< HEAD
+    if (nodes && audioCtx) {
+      nodes.filter.Q.setTargetAtTime(res, audioCtx.currentTime, 0.01);
+    }
+  }, [res, audioCtx, nodes]);
+
+  const moduleDef = useMemo(() => nodes ? {
+    type: 'Filter' as const,
+=======
     if (nodes) {
       nodes.filter.Q.setTargetAtTime(res, audioCtx!.currentTime, 0.01);
     }
@@ -60,6 +86,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name, defaultValues }) => {
 
   const moduleDefinition = useMemo(() => nodes ? {
     type: 'Filter',
+>>>>>>> main
     inputs: {
       'input': nodes.filter,
       'cutoff': nodes.filter.frequency,
@@ -74,7 +101,11 @@ export const Filter: React.FC<FilterProps> = ({ id, name, defaultValues }) => {
     }
   } : null, [nodes]);
 
+<<<<<<< HEAD
+  useAudioModule(id, moduleDef);
+=======
   useAudioModule(id, moduleDefinition as any);
+>>>>>>> main
 
   return (
     <Card className="w-64 bg-zinc-900 border-zinc-800">
@@ -90,10 +121,10 @@ export const Filter: React.FC<FilterProps> = ({ id, name, defaultValues }) => {
             <Label>Cutoff</Label>
             <span>{cutoff} Hz</span>
           </div>
-          <Slider 
-            value={[cutoff]} 
-            min={60} 
-            max={12000} 
+          <Slider
+            value={[cutoff]}
+            min={60}
+            max={12000}
             step={10}
             onValueChange={(v) => setCutoff(v[0])}
             className="[&_.absolute]:bg-purple-500"
@@ -105,10 +136,10 @@ export const Filter: React.FC<FilterProps> = ({ id, name, defaultValues }) => {
             <Label>Resonance</Label>
             <span>{res.toFixed(1)}</span>
           </div>
-          <Slider 
-            value={[res]} 
-            min={0.1} 
-            max={20} 
+          <Slider
+            value={[res]}
+            min={0.1}
+            max={20}
             step={0.1}
             onValueChange={(v) => setRes(v[0])}
             className="[&_.absolute]:bg-purple-500"

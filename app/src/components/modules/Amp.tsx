@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+=======
 import React, { useEffect, useState, useMemo } from 'react';
+>>>>>>> main
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -15,6 +19,10 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   const [gain, setGain] = useState(0.5);
 
   const [nodes, setNodes] = useState<{ gain: GainNode } | null>(null);
+<<<<<<< HEAD
+  const nodesRef = useRef<{ gain: GainNode } | null>(null);
+=======
+>>>>>>> main
 
   useEffect(() => {
     if (!audioCtx) return;
@@ -22,6 +30,10 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = gain;
 
+<<<<<<< HEAD
+    nodesRef.current = { gain: gainNode };
+=======
+>>>>>>> main
     setNodes({ gain: gainNode });
 
     return () => {
@@ -31,6 +43,15 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   }, [audioCtx]);
 
   useEffect(() => {
+<<<<<<< HEAD
+    if (nodes && audioCtx) {
+      nodes.gain.gain.setTargetAtTime(gain, audioCtx.currentTime, 0.01);
+    }
+  }, [gain, audioCtx, nodes]);
+
+  const moduleDef = useMemo(() => nodes ? {
+    type: 'Amp' as const,
+=======
     if (nodes) {
       nodes.gain.gain.setTargetAtTime(gain, audioCtx!.currentTime, 0.01);
     }
@@ -38,6 +59,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
 
   const moduleDefinition = useMemo(() => nodes ? {
     type: 'Amp',
+>>>>>>> main
     inputs: {
       'input': nodes.gain,
       'gain': nodes.gain.gain // Modulation input for AM / tremolo
@@ -50,7 +72,11 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
     }
   } : null, [nodes]);
 
+<<<<<<< HEAD
+  useAudioModule(id, moduleDef);
+=======
   useAudioModule(id, moduleDefinition as any);
+>>>>>>> main
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">
@@ -66,11 +92,11 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
             <Label>Volume</Label>
             <span>{Math.round(gain * 100)}%</span>
           </div>
-          <Slider 
-            value={[gain]} 
-            min={0} 
-            max={1} 
-            step={0.01} 
+          <Slider
+            value={[gain]}
+            min={0}
+            max={1}
+            step={0.01}
             onValueChange={(v) => setGain(v[0])}
             className="[&_.absolute]:bg-amber-500"
           />

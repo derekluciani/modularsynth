@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+=======
 import React, { useEffect, useState, useMemo } from 'react';
+>>>>>>> main
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -20,7 +24,23 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
   const [freq, setFreq] = useState(defaultValues?.freq ?? 5); // Hz
   const [type, setType] = useState<OscillatorType>(defaultValues?.shape ?? 'sine');
 
+<<<<<<< HEAD
+  // LFOs typically output a signal between -1 and 1.
+  // We need a gain node to potentially scale this, but usually the LFO module itself just outputs the raw wave
+  // and the destination (modulation target) or an attenuator handles depth.
+  // However, standard practice in some modular synths is to have an output level.
+  // The requirements say: "LFO 1-2: OscillatorNode + GainNode". 
+  // But the parameters list only shows Freq and Shape.
+  // Let's check if there is an 'Amount' or 'Level' param for LFO in requirements... 
+  // Requirement table: LFO | Freq (Hz) | Shape. No Level.
+  // But "LFO 1-2 | OscillatorNode + GainNode" implies a gain node is used, likely for standardizing output or buffering?
+  // We'll just use a unity gain node as output to be safe and consistent.
+
   const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
+  const nodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
+=======
+  const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
+>>>>>>> main
 
   useEffect(() => {
     if (!audioCtx) return;
@@ -32,9 +52,14 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
     osc.frequency.value = freq;
     gain.gain.value = 1.0; // Full output by default
 
+    // Connect internal graph
     osc.connect(gain);
     osc.start();
 
+<<<<<<< HEAD
+    nodesRef.current = { osc, gain };
+=======
+>>>>>>> main
     setNodes({ osc, gain });
 
     return () => {
@@ -52,6 +77,15 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
   }, [type, nodes]);
 
   useEffect(() => {
+<<<<<<< HEAD
+    if (nodes && audioCtx) {
+      nodes.osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.01);
+    }
+  }, [freq, audioCtx, nodes]);
+
+  const moduleDef = useMemo(() => nodes ? {
+    type: 'LFO' as const,
+=======
     if (nodes) {
       nodes.osc.frequency.setTargetAtTime(freq, audioCtx!.currentTime, 0.01);
     }
@@ -59,6 +93,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
 
   const moduleDefinition = useMemo(() => nodes ? {
     type: 'LFO',
+>>>>>>> main
     inputs: {
       'frequency': nodes.osc.frequency
     },
@@ -70,7 +105,11 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
     }
   } : null, [nodes]);
 
+<<<<<<< HEAD
+  useAudioModule(id, moduleDef);
+=======
   useAudioModule(id, moduleDefinition as any);
+>>>>>>> main
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">
@@ -86,10 +125,10 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
             <Label>Rate</Label>
             <span>{freq} Hz</span>
           </div>
-          <Slider 
-            value={[freq]} 
-            min={0.1} 
-            max={20} 
+          <Slider
+            value={[freq]}
+            min={0.1}
+            max={20}
             step={0.1}
             onValueChange={(v) => setFreq(v[0])}
             className="[&_.absolute]:bg-cyan-500"
