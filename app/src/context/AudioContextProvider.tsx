@@ -20,15 +20,21 @@ interface AudioContextProviderProps {
 export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ children }) => {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const [isWorkletLoaded, setIsWorkletLoaded] = useState(false);
+  const [audioContextState, setAudioContextState] = useState<AudioContextState>('suspended');
   const [modules, setModules] = useState<Record<string, AudioModuleRegistryItem>>({});
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [isDefaultPatchApplied, setIsDefaultPatchApplied] = useState(false);
 
-  // Initialize AudioContext on first interaction or mount (but usually strict autoplay rules require user interaction)
-  // We'll initialize it on mount but it will be suspended.
+  // Initialize AudioContext on first interaction or mount
   useEffect(() => {
     if (!audioCtxRef.current) {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       audioCtxRef.current = ctx;
+      setAudioContextState(ctx.state);
+
+      ctx.onstatechange = () => {
+        setAudioContextState(ctx.state);
+      };
 
       // Load AudioWorklet
       const loadWorklet = async () => {
@@ -71,32 +77,32 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     });
   }, []);
 
-  const connect = useCallback((sourceId: string, sourceNode: string, destId: string, destInput: string) => {
+  const connect = useCallback((sourceId: string, sourceNodeName: string, destId:string, destInputName: string) => {
     const sourceModule = modules[sourceId];
     const destModule = modules[destId];
 
     if (!sourceModule || !destModule) {
-      console.error('Cannot connect: module not found', { sourceId, destId });
+      console.warn(`Cannot connect: module not found. Source: ${sourceId} (${!!sourceModule}), Dest: ${destId} (${!!destModule})`);
       return;
     }
 
-    // Determine if destination is param or node
-    const isParam = !!destModule.params[destInput];
-    // If not param, check inputs
-    if (!isParam && !destModule.inputs[destInput]) {
-      console.error(`Destination input '${destInput}' not found on module '${destId}'`);
+    console.log(`Connecting ${sourceId}:${sourceNodeName} -> ${destId}:${destInputName}`);
+
+    const isParam = !!destModule.params[destInputName];
+    if (!isParam && !destModule.inputs[destInputName]) {
+      console.error(`Destination input '${destInputName}' not found on module '${destId}'`);
       return;
     }
 
-    const success = makeConnection(sourceModule, sourceNode, destModule, destInput, isParam);
+    const success = makeConnection(sourceModule, sourceNodeName, destModule, destInputName, isParam);
 
     if (success) {
       const newConnection: Connection = {
-        id: `${sourceId}-${sourceNode}-${destId}-${destInput}`,
+        id: `${sourceId}-${sourceNodeName}-${destId}-${destInputName}`,
         sourceModuleId: sourceId,
-        sourceNodeName: sourceNode,
+        sourceNodeName: sourceNodeName,
         destModuleId: destId,
-        destInputName: destInput,
+        destInputName: destInputName,
         isParam
       };
       setConnections(prev => [...prev, newConnection]);
@@ -104,8 +110,6 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
   }, [modules]);
 
   const disconnect = useCallback((connectionId: string) => {
-    // finding the connection in the current state
-    // but we need to break it using the current modules
     setConnections(prev => {
       const conn = prev.find(c => c.id === connectionId);
       if (!conn) return prev;
@@ -134,8 +138,31 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     });
   }, [modules]);
 
+  const restoreDefaultPatch = useCallback(() => {
+    resetConnections();
+    connect('lfo1', 'output', 'osc1', 'pitch');
+    connect('osc1', 'output', 'filter1', 'input');
+    connect('osc2', 'output', 'filter1', 'input');
+    connect('filter1', 'output', 'amp1', 'input');
+    connect('amp1', 'output', 'master', 'input');
+  }, [connect, resetConnections]);
+
+  useEffect(() => {
+    if (isDefaultPatchApplied) {
+      return;
+    }
+    const requiredModules = ['lfo1', 'osc1', 'osc2', 'filter1', 'amp1', 'master'];
+    const allModulesRegistered = requiredModules.every(id => !!modules[id]);
+
+    if (allModulesRegistered) {
+      restoreDefaultPatch();
+      setIsDefaultPatchApplied(true);
+    }
+  }, [modules, isDefaultPatchApplied, restoreDefaultPatch]);
+
   const value: AudioContextType = useMemo(() => ({
     audioCtx: audioCtxRef.current,
+    audioContextState,
     isWorkletLoaded,
     modules,
     connections,
@@ -144,8 +171,9 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     connect,
     disconnect,
     resetConnections,
+    restoreDefaultPatch,
     resumeContext
-  }), [isWorkletLoaded, modules, connections, registerModule, unregisterModule, connect, disconnect, resetConnections, resumeContext]);
+  }), [audioContextState, isWorkletLoaded, modules, connections, registerModule, unregisterModule, connect, disconnect, resetConnections, restoreDefaultPatch, resumeContext]);
 
   return (
     <AudioContextReact.Provider value={value}>
@@ -153,3 +181,4 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     </AudioContextReact.Provider>
   );
 };
+

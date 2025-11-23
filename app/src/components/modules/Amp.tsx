@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -14,7 +14,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const [gain, setGain] = useState(0.5);
 
-  const nodesRef = useRef<{ gain: GainNode } | null>(null);
+  const [nodes, setNodes] = useState<{ gain: GainNode } | null>(null);
 
   useEffect(() => {
     if (!audioCtx) return;
@@ -22,7 +22,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = gain;
 
-    nodesRef.current = { gain: gainNode };
+    setNodes({ gain: gainNode });
 
     return () => {
       gainNode.disconnect();
@@ -31,24 +31,26 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   }, [audioCtx]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.gain.gain.setTargetAtTime(gain, audioCtx!.currentTime, 0.01);
+    if (nodes) {
+      nodes.gain.gain.setTargetAtTime(gain, audioCtx!.currentTime, 0.01);
     }
-  }, [gain, audioCtx]);
+  }, [gain, audioCtx, nodes]);
 
-  useAudioModule(id, nodesRef.current ? {
+  const moduleDefinition = useMemo(() => nodes ? {
     type: 'Amp',
     inputs: {
-      'input': nodesRef.current.gain,
-      'gain': nodesRef.current.gain.gain // Modulation input for AM / tremolo
+      'input': nodes.gain,
+      'gain': nodes.gain.gain // Modulation input for AM / tremolo
     },
     outputs: {
-      'output': nodesRef.current.gain
+      'output': nodes.gain
     },
     params: {
-      'gain': nodesRef.current.gain.gain
+      'gain': nodes.gain.gain
     }
-  } : null);
+  } : null, [nodes]);
+
+  useAudioModule(id, moduleDefinition as any);
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">

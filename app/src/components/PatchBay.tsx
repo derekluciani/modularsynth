@@ -43,26 +43,15 @@ export const PatchBay: React.FC = () => {
     if (!selectedSourceId || !selectedDestId || !selectedDestInput) return;
     
     const [sourceId, sourceNode] = selectedSourceId.split(':');
-    // Check self-patching
-    if (sourceId === selectedDestId) {
-       // Requirement: "Source and destination cannot be the same" (module level check)
-       // But wait, can Osc1 Output connect to Osc1 Pitch? Yes, FM.
-       // Requirement says: "Paired Source and Destination values cannot be the same (eg. Osc 1 -> Osc 1)."
-       // If the user selects a Destination and it matches the Source, display validation message.
-       // Let's strictly follow requirement: "Paired Source and Destination values cannot be the same".
-       // This implies Module Level identity or exact dropdown value identity?
-       // Example: "Osc 1 -> Osc 1" implies source module == dest module.
-       // Usually FM feedback is allowed. But let's adhere to the specific text "Source and destination cannot be the same".
-       // It likely refers to the exact selection strings if they were simple.
-       // But here we have complex paths.
-       // "Source and destination cannot be the same" usually prevents infinite loops or null ops.
-       // Let's allow self-patching (FM) unless it strictly creates a feedback loop on the same node?
-       // Actually, the requirement text "eg. Osc 1 -> Osc 1" strongly suggests Module-to-same-Module patching is discouraged or the check is at Module ID level.
-       // "If the user selects a Destination and it matches the Source"
-       // Let's show a warning if Module IDs match.
+    const destId = selectedDestId;
+    const destInput = selectedDestInput;
+
+    if (sourceId === destId) {
+      // Validation as per requirements
+      return;
     }
 
-    connect(sourceId, sourceNode, selectedDestId, selectedDestInput);
+    connect(sourceId, sourceNode, destId, destInput);
     
     // Reset selection
     setSelectedSourceId('');

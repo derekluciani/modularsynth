@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -15,19 +15,10 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   const [time, setTime] = useState(0.5);
   const [feedback, setFeedback] = useState(0.3);
 
-  const nodesRef = useRef<{ delay: DelayNode; feedbackGain: GainNode; inputGain: GainNode; outputGain: GainNode } | null>(null);
+  const [nodes, setNodes] = useState<{ delay: DelayNode; feedbackGain: GainNode; inputGain: GainNode; outputGain: GainNode } | null>(null);
 
   useEffect(() => {
     if (!audioCtx) return;
-
-    // Standard delay structure:
-    // Input -> InputGain -> OutputGain -> Output
-    //             |
-    //             v
-    //           Delay -> FeedbackGain -> (back to InputGain input)
-    //             |
-    //             v
-    //           (mix to output)
 
     const inputGain = audioCtx.createGain();
     const outputGain = audioCtx.createGain();
@@ -38,28 +29,18 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
     feedbackGain.gain.value = feedback;
     
     // Routing
-    inputGain.connect(outputGain); // Dry signal (optional? usually delay module is wet only or wet/dry mix. Let's assume this module outputs Wet + Dry or just Wet?)
-    // Requirement says: "DelayNode + GainNode feedback loop"
-    // Usually a Delay module in a modular synth outputs the wet signal, or has a Mix knob.
-    // Requirements do not specify Mix knob.
-    // Let's implement a standard "Input passes through, and Delay adds to it" or just "Delay line".
-    // If we just output the delay line, user must mix it themselves.
-    // But usually "Delay" module implies an effect unit.
-    // Let's route Input -> Delay -> Output. And Input -> Output (Dry).
-    // Actually, if we want a true modular delay, we often just want the delayed signal. 
-    // But for simplicity and typical usage without a mixer module:
-    // Let's do: Input -> Output (Direct) AND Input -> Delay -> Output.
-    // Wait, if we chain Osc -> Delay -> AudioOut, we expect to hear the Osc AND the echo.
+    // Input -> Output (Dry)
+    inputGain.connect(outputGain);
     
-    // Wiring:
+    // Input -> Delay -> Output (Wet)
     inputGain.connect(delayNode);
-    delayNode.connect(feedbackGain);
-    feedbackGain.connect(delayNode); // Feedback loop
-    
     delayNode.connect(outputGain);
-    inputGain.connect(outputGain); // Dry signal pass-through
+    
+    // Feedback Loop: Delay -> FeedbackGain -> Delay
+    delayNode.connect(feedbackGain);
+    feedbackGain.connect(delayNode); 
 
-    nodesRef.current = { delay: delayNode, feedbackGain, inputGain, outputGain };
+    setNodes({ delay: delayNode, feedbackGain, inputGain, outputGain });
 
     return () => {
       inputGain.disconnect();
@@ -71,32 +52,34 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   }, [audioCtx]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.delay.delayTime.setTargetAtTime(time, audioCtx!.currentTime, 0.01);
+    if (nodes) {
+      nodes.delay.delayTime.setTargetAtTime(time, audioCtx!.currentTime, 0.01);
     }
-  }, [time, audioCtx]);
+  }, [time, audioCtx, nodes]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.feedbackGain.gain.setTargetAtTime(feedback, audioCtx!.currentTime, 0.01);
+    if (nodes) {
+      nodes.feedbackGain.gain.setTargetAtTime(feedback, audioCtx!.currentTime, 0.01);
     }
-  }, [feedback, audioCtx]);
+  }, [feedback, audioCtx, nodes]);
 
-  useAudioModule(id, nodesRef.current ? {
+  const moduleDefinition = useMemo(() => nodes ? {
     type: 'Delay',
     inputs: {
-      'input': nodesRef.current.inputGain,
-      'time': nodesRef.current.delay.delayTime,
-      'feedback': nodesRef.current.feedbackGain.gain
+      'input': nodes.inputGain,
+      'time': nodes.delay.delayTime,
+      'feedback': nodes.feedbackGain.gain
     },
     outputs: {
-      'output': nodesRef.current.outputGain
+      'output': nodes.outputGain
     },
     params: {
-      'time': nodesRef.current.delay.delayTime,
-      'feedback': nodesRef.current.feedbackGain.gain
+      'time': nodes.delay.delayTime,
+      'feedback': nodes.feedbackGain.gain
     }
-  } : null);
+  } : null, [nodes]);
+
+  useAudioModule(id, moduleDefinition as any);
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">

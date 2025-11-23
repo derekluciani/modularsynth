@@ -123,7 +123,7 @@ The user will have the ability to connect/disconnect modules via an interactive 
   - Filter 1, Filter 2
   - Delay 1
   - Amp
-  - AudioOut
+  - Audio Out
 - Params:
   - Osc [1-4] Pitch, Osc [1-4] Level
   - LFO [1-2] Freq
@@ -136,7 +136,9 @@ The user will have the ability to connect/disconnect modules via an interactive 
   * **Paired Source and Destination values cannot be the same** (eg. Osc 1 → Osc 1). If the user selects a Destination and it matches the Source, display the validation message: _"Source and destination cannot be the same"_. If the user changes the Source or Destination and the values no longer match, remove the validation message.
 
 ### UI
-- Create a button that appears next to each established Source/Destination pairing. This button will enable the user to easily "Remove connection". When clicked, the button disapears and the values within both input fields reset to the default placeholder.  
+- Create a "Clear" button that appears next to each established Source/Destination pairing. This button will enable the user to easily remove the connection. When clicked, the button disapears and the values within both input fields reset to the default placeholder.
+> Implement this design from Figma.
+@https://www.figma.com/design/bUeKCCUdZ12dsTo92fUYPc/Modular-Synth--Designs-?node-id=67-3366&m=dev  
 
 ## Default Routing
 These are the default connections that a user will expect to have when the app is launched:
@@ -147,7 +149,7 @@ These are the default connections that a user will expect to have when the app i
 * Amp → Destination (AudioOut)
 
 ### UI
-- Create a button that enables the user to "Restore default patch". When clicked, all existing connection values reset to match the 'Default Routing' values.
+- Create a button that enables the user to "Restore default" patch. When clicked, all existing connection values reset to match the 'Default Routing' values.
 
 ## Default Parameter Values
 These are the expected default values:  
@@ -187,7 +189,8 @@ These are the expected default values:
 Please implement each task below and mark each one with an '[x]' once they are completed.
 ## Phase 1 - Setup & Core Engine
 - [x] Review all information in this document
-- [x] Scaffold Vite + React + Tailwind + shadcn/ui [(Follow this installation process)](/Users/derekluciani/repo/modularsynth/scaffoldShadcnTailwind4.md) [x] Create folder structure (ensure `public/processors/random-processor.js` exists)
+- [x] Scaffold Vite + React + Tailwind + shadcn/ui [(Follow this installation process)](/Users/derekluciani/repo/modularsynth/scaffoldShadcnTailwind4.md)
+- [x] Create folder structure (ensure `public/processors/random-processor.js` exists)
 - [x] Implement global `AudioContextProvider` (State, Context creation, AudioWorklet loading)
 - [x] Implement audio graph logic (Connect/Disconnect/Patching functions)  
 - [x] Build reusable `useAudioModule` hook
@@ -200,9 +203,10 @@ Please implement each task below and mark each one with an '[x]' once they are c
 - [x] Implement **Random** module (ensure AudioWorklet communication works)
 - [x] Implement the **Patch Bay** UI component (Global connection manager)
 ## Phase 4 - Integration & Polish
-- [ ] Apply default routing logic & "Restore default patch" reset action 
-- [ ] Verify default routing produces audible sound on app load 
-- [ ] Apply visual design specs provided here:
-- [ ] Final QA: Measure against **Success Criteria**
+- [x] Apply default routing logic & "Restore default patch" reset action 
+- [x] Verify default routing produces audible sound on app load 
+- [x] Create the entire visual design layout based on this Figma Design: @https://www.figma.com/design/bUeKCCUdZ12dsTo92fUYPc/Modular-Synth--Designs-?node-id=66-377&m=dev
+- [x] Verify: All UI is functionally complete
+- [x] Final QA: Measure against **Success Criteria**
 
 # ! End of Document

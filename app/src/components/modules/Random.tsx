@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -15,7 +15,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const [rate, setRate] = useState(1);
   const [level, setLevel] = useState(1);
 
-  const nodesRef = useRef<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
+  const [nodes, setNodes] = useState<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
 
   useEffect(() => {
     if (!audioCtx || !isWorkletLoaded) return;
@@ -31,7 +31,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
 
       worklet.connect(gainNode);
 
-      nodesRef.current = { worklet, gain: gainNode };
+      setNodes({ worklet, gain: gainNode });
 
       return () => {
         worklet.disconnect();
@@ -44,33 +44,35 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   }, [audioCtx, isWorkletLoaded]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      const rateParam = nodesRef.current.worklet.parameters.get('rate');
+    if (nodes) {
+      const rateParam = nodes.worklet.parameters.get('rate');
       if (rateParam) {
         rateParam.setTargetAtTime(rate, audioCtx!.currentTime, 0.01);
       }
     }
-  }, [rate, audioCtx]);
+  }, [rate, audioCtx, nodes]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.gain.gain.setTargetAtTime(level, audioCtx!.currentTime, 0.01);
+    if (nodes) {
+      nodes.gain.gain.setTargetAtTime(level, audioCtx!.currentTime, 0.01);
     }
-  }, [level, audioCtx]);
+  }, [level, audioCtx, nodes]);
 
-  useAudioModule(id, nodesRef.current ? {
+  const moduleDefinition = useMemo(() => nodes ? {
     type: 'Random',
     inputs: {
-      'rate': nodesRef.current.worklet.parameters.get('rate') as AudioParam, // Allows modulating rate
+      'rate': nodes.worklet.parameters.get('rate') as AudioParam, // Allows modulating rate
     },
     outputs: {
-      'output': nodesRef.current.gain
+      'output': nodes.gain
     },
     params: {
-      'rate': nodesRef.current.worklet.parameters.get('rate') as AudioParam,
-      'level': nodesRef.current.gain.gain
+      'rate': nodes.worklet.parameters.get('rate') as AudioParam,
+      'level': nodes.gain.gain
     }
-  } : null);
+  } : null, [nodes]);
+
+  useAudioModule(id, moduleDefinition as any);
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">

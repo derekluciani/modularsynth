@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -12,29 +12,26 @@ interface AudioOutProps {
 }
 
 export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
-  const { audioCtx, resumeContext } = useAudioContext();
+  const { audioCtx, resumeContext, audioContextState } = useAudioContext();
   const [volume, setVolume] = useState(0.75);
   const [pan, setPan] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
 
-  const nodesRef = useRef<{ panner: StereoPannerNode; gain: GainNode } | null>(null);
+  const [nodes, setNodes] = useState<{ panner: StereoPannerNode; gain: GainNode } | null>(null);
 
   useEffect(() => {
     if (!audioCtx) return;
 
-    // Create nodes
     const panner = audioCtx.createStereoPanner();
     const gain = audioCtx.createGain();
 
-    // Initial values
     panner.pan.value = pan;
     gain.gain.value = volume;
 
-    // Connect graph: Input -> Panner -> Gain -> Destination
     panner.connect(gain);
     gain.connect(audioCtx.destination);
 
-    nodesRef.current = { panner, gain };
+    setNodes({ panner, gain });
 
     return () => {
       panner.disconnect();
@@ -43,34 +40,46 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx]);
 
-  // Handle updates
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.panner.pan.setTargetAtTime(pan, audioCtx!.currentTime, 0.01);
+    if (nodes) {
+      nodes.panner.pan.setTargetAtTime(pan, audioCtx!.currentTime, 0.01);
     }
-  }, [pan, audioCtx]);
+  }, [pan, audioCtx, nodes]);
 
   useEffect(() => {
-    if (nodesRef.current) {
+    if (nodes) {
       const targetVol = isMuted ? 0 : volume;
-      nodesRef.current.gain.gain.setTargetAtTime(targetVol, audioCtx!.currentTime, 0.01);
+      nodes.gain.gain.setTargetAtTime(targetVol, audioCtx!.currentTime, 0.01);
     }
-  }, [volume, isMuted, audioCtx]);
+  }, [volume, isMuted, audioCtx, nodes]);
 
-  // Register module
-  useAudioModule(id, nodesRef.current ? {
+  const moduleDefinition = useMemo(() => nodes ? {
     type: 'AudioOut',
     inputs: {
-      'input': nodesRef.current.panner
+      'input': nodes.panner
     },
-    outputs: {}, // No outputs, it's the final destination
+    outputs: {}, 
     params: {
-      'pan': nodesRef.current.panner.pan
+      'pan': nodes.panner.pan
     }
-  } : null);
+  } : null, [nodes]);
+
+  useAudioModule(id, moduleDefinition as any);
 
   return (
-    <Card className="w-48 bg-zinc-900 border-zinc-800 shadow-lg shadow-black/50">
+    <Card className="w-48 bg-zinc-900 border-zinc-800 shadow-lg shadow-black/50 relative overflow-hidden">
+      {audioContextState === 'suspended' && (
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-10 animate-in fade-in">
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={() => resumeContext()}
+            className="text-xs font-bold shadow-lg shadow-green-500/20"
+          >
+            Click to Start
+          </Button>
+        </div>
+      )}
       <CardHeader className="pb-3 border-b border-zinc-800 bg-zinc-950/50">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>Master</span>
@@ -85,23 +94,12 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pt-4">
-        {/* Resume Context Button (if suspended) */}
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full text-xs border-zinc-700 hover:bg-zinc-800 hover:text-zinc-100"
-          onClick={() => resumeContext()}
-        >
-          Start / Resume
-        </Button>
-
         {/* Volume */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Volume</Label>
             <span>{Math.round(volume * 100)}%</span>
           </div>
-          {/* Vertical Slider attempt or just horizontal? Requirements didn't specify orientation, sticking to horizontal for consistency with other modules for now */}
           <Slider 
             value={[volume]} 
             min={0} 
