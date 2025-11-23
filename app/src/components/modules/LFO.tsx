@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-=======
-import React, { useEffect, useState, useMemo } from 'react';
->>>>>>> main
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -13,18 +9,13 @@ import { Label } from '../ui/label';
 interface LFOProps {
   id: string;
   name: string;
-  defaultValues?: {
-    freq?: number;
-    shape?: OscillatorType;
-  };
 }
 
-export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
+export const LFO: React.FC<LFOProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const [freq, setFreq] = useState(defaultValues?.freq ?? 5); // Hz
-  const [type, setType] = useState<OscillatorType>(defaultValues?.shape ?? 'sine');
+  const [freq, setFreq] = useState(5); // Hz
+  const [type, setType] = useState<OscillatorType>('sine');
 
-<<<<<<< HEAD
   // LFOs typically output a signal between -1 and 1.
   // We need a gain node to potentially scale this, but usually the LFO module itself just outputs the raw wave
   // and the destination (modulation target) or an attenuator handles depth.
@@ -38,9 +29,6 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
 
   const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
-=======
-  const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
->>>>>>> main
 
   useEffect(() => {
     if (!audioCtx) return;
@@ -56,10 +44,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
     osc.connect(gain);
     osc.start();
 
-<<<<<<< HEAD
     nodesRef.current = { osc, gain };
-=======
->>>>>>> main
     setNodes({ osc, gain });
 
     return () => {
@@ -77,7 +62,6 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
   }, [type, nodes]);
 
   useEffect(() => {
-<<<<<<< HEAD
     if (nodes && audioCtx) {
       nodes.osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.01);
     }
@@ -85,15 +69,6 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
 
   const moduleDef = useMemo(() => nodes ? {
     type: 'LFO' as const,
-=======
-    if (nodes) {
-      nodes.osc.frequency.setTargetAtTime(freq, audioCtx!.currentTime, 0.01);
-    }
-  }, [freq, audioCtx, nodes]);
-
-  const moduleDefinition = useMemo(() => nodes ? {
-    type: 'LFO',
->>>>>>> main
     inputs: {
       'frequency': nodes.osc.frequency
     },
@@ -105,11 +80,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name, defaultValues }) => {
     }
   } : null, [nodes]);
 
-<<<<<<< HEAD
   useAudioModule(id, moduleDef);
-=======
-  useAudioModule(id, moduleDefinition as any);
->>>>>>> main
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">
