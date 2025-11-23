@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+=======
+import React, { useEffect, useState, useMemo } from 'react';
+>>>>>>> main
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -9,16 +13,24 @@ import { Label } from '../ui/label';
 interface OscillatorProps {
   id: string;
   name: string;
+  defaultValues?: {
+    pitch?: number;
+    shape?: OscillatorType;
+    level?: number;
+  };
 }
 
-export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
+export const Oscillator: React.FC<OscillatorProps> = ({ id, name, defaultValues }) => {
   const { audioCtx } = useAudioContext();
-  const [freq, setFreq] = useState(440);
-  const [type, setType] = useState<OscillatorType>('sawtooth');
-  const [level, setLevel] = useState(0.5);
+  const [freq, setFreq] = useState(defaultValues?.pitch ?? 440);
+  const [type, setType] = useState<OscillatorType>(defaultValues?.shape ?? 'sawtooth');
+  const [level, setLevel] = useState(defaultValues?.level ?? 0.5);
 
   const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
+<<<<<<< HEAD
   const nodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
+=======
+>>>>>>> main
 
   useEffect(() => {
     if (!audioCtx) return;
@@ -37,8 +49,11 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
     osc.connect(gain);
     osc.start();
 
+<<<<<<< HEAD
     // Store nodes in state to trigger re-render and registration
     nodesRef.current = { osc, gain };
+=======
+>>>>>>> main
     setNodes({ osc, gain });
 
     return () => {
@@ -57,14 +72,20 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   }, [type, nodes]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (nodes && audioCtx) {
       // We use setTargetAtTime for smooth transitions if needed, or just direct assignment for UI control
       // Direct assignment is fine for this simple synth unless we get clicking
       nodes.osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.01);
+=======
+    if (nodes) {
+      nodes.osc.frequency.setTargetAtTime(freq, audioCtx!.currentTime, 0.01);
+>>>>>>> main
     }
   }, [freq, audioCtx, nodes]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (nodes && audioCtx) {
       nodes.gain.gain.setTargetAtTime(level, audioCtx.currentTime, 0.01);
     }
@@ -75,6 +96,17 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
     type: 'Oscillator' as const,
     inputs: {
       // FM modulation usually goes to frequency
+=======
+    if (nodes) {
+      nodes.gain.gain.setTargetAtTime(level, audioCtx!.currentTime, 0.01);
+    }
+  }, [level, audioCtx, nodes]);
+
+  // Memoize definition to prevent infinite loops
+  const moduleDefinition = useMemo(() => nodes ? {
+    type: 'Oscillator',
+    inputs: {
+>>>>>>> main
       'pitch': nodes.osc.frequency,
       'level': nodes.gain.gain
     },
@@ -88,7 +120,11 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   } : null, [nodes]);
 
   // Register module
+<<<<<<< HEAD
   useAudioModule(id, moduleDef);
+=======
+  useAudioModule(id, moduleDefinition as any); // Cast to any or satisfy type if strictly matching
+>>>>>>> main
 
   return (
     <Card className="w-64 bg-zinc-900 border-zinc-800">

@@ -26,6 +26,7 @@ export interface Connection {
 
 export interface AudioContextType {
   audioCtx: AudioContext | null;
+  audioContextState: AudioContextState;
   isWorkletLoaded: boolean;
   modules: Record<string, AudioModuleRegistryItem>;
   connections: Connection[];

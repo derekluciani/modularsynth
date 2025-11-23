@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+=======
+import React, { useEffect, useState, useMemo } from 'react';
+>>>>>>> main
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -16,7 +20,10 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const [level, setLevel] = useState(1);
 
   const [nodes, setNodes] = useState<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
+<<<<<<< HEAD
   const nodesRef = useRef<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
+=======
+>>>>>>> main
 
   useEffect(() => {
     if (!audioCtx || !isWorkletLoaded) return;
@@ -32,7 +39,10 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
 
       worklet.connect(gainNode);
 
+<<<<<<< HEAD
       nodesRef.current = { worklet, gain: gainNode };
+=======
+>>>>>>> main
       setNodes({ worklet, gain: gainNode });
 
       return () => {
@@ -46,7 +56,11 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   }, [audioCtx, isWorkletLoaded]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (nodes && audioCtx) {
+=======
+    if (nodes) {
+>>>>>>> main
       const rateParam = nodes.worklet.parameters.get('rate');
       if (rateParam) {
         rateParam.setTargetAtTime(rate, audioCtx.currentTime, 0.01);
@@ -55,6 +69,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   }, [rate, audioCtx, nodes]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (nodes && audioCtx) {
       nodes.gain.gain.setTargetAtTime(level, audioCtx.currentTime, 0.01);
     }
@@ -62,6 +77,15 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
 
   const moduleDef = useMemo(() => nodes ? {
     type: 'Random' as const,
+=======
+    if (nodes) {
+      nodes.gain.gain.setTargetAtTime(level, audioCtx!.currentTime, 0.01);
+    }
+  }, [level, audioCtx, nodes]);
+
+  const moduleDefinition = useMemo(() => nodes ? {
+    type: 'Random',
+>>>>>>> main
     inputs: {
       'rate': nodes.worklet.parameters.get('rate') as AudioParam, // Allows modulating rate
     },
@@ -74,7 +98,11 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
     }
   } : null, [nodes]);
 
+<<<<<<< HEAD
   useAudioModule(id, moduleDef);
+=======
+  useAudioModule(id, moduleDefinition as any);
+>>>>>>> main
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">

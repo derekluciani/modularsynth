@@ -43,6 +43,7 @@ export const PatchBay: React.FC = () => {
     if (!selectedSourceId || !selectedDestId || !selectedDestInput) return;
 
     const [sourceId, sourceNode] = selectedSourceId.split(':');
+<<<<<<< HEAD
     // Check self-patching
     if (sourceId === selectedDestId) {
       // Requirement: "Source and destination cannot be the same" (module level check)
@@ -64,6 +65,18 @@ export const PatchBay: React.FC = () => {
 
     connect(sourceId, sourceNode, selectedDestId, selectedDestInput);
 
+=======
+    const destId = selectedDestId;
+    const destInput = selectedDestInput;
+
+    if (sourceId === destId) {
+      // Validation as per requirements
+      return;
+    }
+
+    connect(sourceId, sourceNode, destId, destInput);
+    
+>>>>>>> main
     // Reset selection
     setSelectedSourceId('');
     setSelectedDestId('');

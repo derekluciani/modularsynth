@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+=======
+import React, { useEffect, useState, useMemo } from 'react';
+>>>>>>> main
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -16,19 +20,13 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   const [feedback, setFeedback] = useState(0.3);
 
   const [nodes, setNodes] = useState<{ delay: DelayNode; feedbackGain: GainNode; inputGain: GainNode; outputGain: GainNode } | null>(null);
+<<<<<<< HEAD
   const nodesRef = useRef<{ delay: DelayNode; feedbackGain: GainNode; inputGain: GainNode; outputGain: GainNode } | null>(null);
+=======
+>>>>>>> main
 
   useEffect(() => {
     if (!audioCtx) return;
-
-    // Standard delay structure:
-    // Input -> InputGain -> OutputGain -> Output
-    //             |
-    //             v
-    //           Delay -> FeedbackGain -> (back to InputGain input)
-    //             |
-    //             v
-    //           (mix to output)
 
     const inputGain = audioCtx.createGain();
     const outputGain = audioCtx.createGain();
@@ -39,6 +37,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
     feedbackGain.gain.value = feedback;
 
     // Routing
+<<<<<<< HEAD
     inputGain.connect(outputGain); // Dry signal (optional? usually delay module is wet only or wet/dry mix. Let's assume this module outputs Wet + Dry or just Wet?)
     // Requirement says: "DelayNode + GainNode feedback loop"
     // Usually a Delay module in a modular synth outputs the wet signal, or has a Mix knob.
@@ -57,10 +56,23 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
     delayNode.connect(feedbackGain);
     feedbackGain.connect(delayNode); // Feedback loop
 
+=======
+    // Input -> Output (Dry)
+    inputGain.connect(outputGain);
+    
+    // Input -> Delay -> Output (Wet)
+    inputGain.connect(delayNode);
+>>>>>>> main
     delayNode.connect(outputGain);
-    inputGain.connect(outputGain); // Dry signal pass-through
+    
+    // Feedback Loop: Delay -> FeedbackGain -> Delay
+    delayNode.connect(feedbackGain);
+    feedbackGain.connect(delayNode); 
 
+<<<<<<< HEAD
     nodesRef.current = { delay: delayNode, feedbackGain, inputGain, outputGain };
+=======
+>>>>>>> main
     setNodes({ delay: delayNode, feedbackGain, inputGain, outputGain });
 
     return () => {
@@ -73,12 +85,18 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   }, [audioCtx]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (nodes && audioCtx) {
       nodes.delay.delayTime.setTargetAtTime(time, audioCtx.currentTime, 0.01);
+=======
+    if (nodes) {
+      nodes.delay.delayTime.setTargetAtTime(time, audioCtx!.currentTime, 0.01);
+>>>>>>> main
     }
   }, [time, audioCtx, nodes]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (nodes && audioCtx) {
       nodes.feedbackGain.gain.setTargetAtTime(feedback, audioCtx.currentTime, 0.01);
     }
@@ -86,6 +104,15 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
 
   const moduleDef = useMemo(() => nodes ? {
     type: 'Delay' as const,
+=======
+    if (nodes) {
+      nodes.feedbackGain.gain.setTargetAtTime(feedback, audioCtx!.currentTime, 0.01);
+    }
+  }, [feedback, audioCtx, nodes]);
+
+  const moduleDefinition = useMemo(() => nodes ? {
+    type: 'Delay',
+>>>>>>> main
     inputs: {
       'input': nodes.inputGain,
       'time': nodes.delay.delayTime,
@@ -100,7 +127,11 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
     }
   } : null, [nodes]);
 
+<<<<<<< HEAD
   useAudioModule(id, moduleDef);
+=======
+  useAudioModule(id, moduleDefinition as any);
+>>>>>>> main
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">
