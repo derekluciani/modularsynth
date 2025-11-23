@@ -196,9 +196,9 @@ Please implement each task below and mark each one with an '[x]' once they are c
 - [x] Register these modules in `AudioContextProvider` 
 - [x] Verify: Are you able to manually connect Osc → AudioOut and register an audible sound level? (NOTE: _Fix any core bugs here!_)
 ## Phase 3 - Full Module Implementation
-- [ ] Implement remaining core modules (Amp, Filter, LFO, Delay)
-- [ ] Implement **Random** module (ensure AudioWorklet communication works)
-- [ ] Implement the **Patch Bay** UI component (Global connection manager)
+- [x] Implement remaining core modules (Amp, Filter, LFO, Delay)
+- [x] Implement **Random** module (ensure AudioWorklet communication works)
+- [x] Implement the **Patch Bay** UI component (Global connection manager)
 ## Phase 4 - Integration & Polish
 - [ ] Apply default routing logic & "Restore default patch" reset action 
 - [ ] Verify default routing produces audible sound on app load 
