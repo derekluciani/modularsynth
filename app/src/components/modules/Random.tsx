@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -15,6 +15,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const [rate, setRate] = useState(1);
   const [level, setLevel] = useState(1);
 
+  const [nodes, setNodes] = useState<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
     try {
       const worklet = new AudioWorkletNode(audioCtx, 'random-processor');
       const gainNode = audioCtx.createGain();
-      
+
       // Parameters
       const rateParam = worklet.parameters.get('rate');
       if (rateParam) rateParam.value = rate;
@@ -32,6 +33,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
       worklet.connect(gainNode);
 
       nodesRef.current = { worklet, gain: gainNode };
+      setNodes({ worklet, gain: gainNode });
 
       return () => {
         worklet.disconnect();
@@ -44,33 +46,35 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   }, [audioCtx, isWorkletLoaded]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      const rateParam = nodesRef.current.worklet.parameters.get('rate');
+    if (nodes && audioCtx) {
+      const rateParam = nodes.worklet.parameters.get('rate');
       if (rateParam) {
-        rateParam.setTargetAtTime(rate, audioCtx!.currentTime, 0.01);
+        rateParam.setTargetAtTime(rate, audioCtx.currentTime, 0.01);
       }
     }
-  }, [rate, audioCtx]);
+  }, [rate, audioCtx, nodes]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.gain.gain.setTargetAtTime(level, audioCtx!.currentTime, 0.01);
+    if (nodes && audioCtx) {
+      nodes.gain.gain.setTargetAtTime(level, audioCtx.currentTime, 0.01);
     }
-  }, [level, audioCtx]);
+  }, [level, audioCtx, nodes]);
 
-  useAudioModule(id, nodesRef.current ? {
-    type: 'Random',
+  const moduleDef = useMemo(() => nodes ? {
+    type: 'Random' as const,
     inputs: {
-      'rate': nodesRef.current.worklet.parameters.get('rate') as AudioParam, // Allows modulating rate
+      'rate': nodes.worklet.parameters.get('rate') as AudioParam, // Allows modulating rate
     },
     outputs: {
-      'output': nodesRef.current.gain
+      'output': nodes.gain
     },
     params: {
-      'rate': nodesRef.current.worklet.parameters.get('rate') as AudioParam,
-      'level': nodesRef.current.gain.gain
+      'rate': nodes.worklet.parameters.get('rate') as AudioParam,
+      'level': nodes.gain.gain
     }
-  } : null);
+  } : null, [nodes]);
+
+  useAudioModule(id, moduleDef);
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">
@@ -84,16 +88,16 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
         {!isWorkletLoaded && (
           <div className="text-red-500 text-xs">Processor loading...</div>
         )}
-        
+
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Rate</Label>
             <span>{rate} Hz</span>
           </div>
-          <Slider 
-            value={[rate]} 
-            min={0.1} 
-            max={20} 
+          <Slider
+            value={[rate]}
+            min={0.1}
+            max={20}
             step={0.1}
             onValueChange={(v) => setRate(v[0])}
             className="[&_.absolute]:bg-pink-500"
@@ -105,10 +109,10 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             <Label>Level</Label>
             <span>{Math.round(level * 100)}%</span>
           </div>
-          <Slider 
-            value={[level]} 
-            min={0} 
-            max={1} 
+          <Slider
+            value={[level]}
+            min={0}
+            max={1}
             step={0.01}
             onValueChange={(v) => setLevel(v[0])}
             className="[&_.absolute]:bg-pink-500"

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -27,6 +27,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
   // But "LFO 1-2 | OscillatorNode + GainNode" implies a gain node is used, likely for standardizing output or buffering?
   // We'll just use a unity gain node as output to be safe and consistent.
 
+  const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
 
   useEffect(() => {
@@ -39,10 +40,12 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
     osc.frequency.value = freq;
     gain.gain.value = 1.0; // Full output by default
 
+    // Connect internal graph
     osc.connect(gain);
     osc.start();
 
     nodesRef.current = { osc, gain };
+    setNodes({ osc, gain });
 
     return () => {
       osc.stop();
@@ -53,29 +56,31 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
   }, [audioCtx]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.osc.type = type;
+    if (nodes) {
+      nodes.osc.type = type;
     }
-  }, [type]);
+  }, [type, nodes]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.osc.frequency.setTargetAtTime(freq, audioCtx!.currentTime, 0.01);
+    if (nodes && audioCtx) {
+      nodes.osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.01);
     }
-  }, [freq, audioCtx]);
+  }, [freq, audioCtx, nodes]);
 
-  useAudioModule(id, nodesRef.current ? {
-    type: 'LFO',
+  const moduleDef = useMemo(() => nodes ? {
+    type: 'LFO' as const,
     inputs: {
-      'frequency': nodesRef.current.osc.frequency
+      'frequency': nodes.osc.frequency
     },
     outputs: {
-      'output': nodesRef.current.gain
+      'output': nodes.gain
     },
     params: {
-      'frequency': nodesRef.current.osc.frequency
+      'frequency': nodes.osc.frequency
     }
-  } : null);
+  } : null, [nodes]);
+
+  useAudioModule(id, moduleDef);
 
   return (
     <Card className="w-48 bg-zinc-900 border-zinc-800">
@@ -91,10 +96,10 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
             <Label>Rate</Label>
             <span>{freq} Hz</span>
           </div>
-          <Slider 
-            value={[freq]} 
-            min={0.1} 
-            max={20} 
+          <Slider
+            value={[freq]}
+            min={0.1}
+            max={20}
             step={0.1}
             onValueChange={(v) => setFreq(v[0])}
             className="[&_.absolute]:bg-cyan-500"

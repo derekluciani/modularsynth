@@ -6,15 +6,15 @@ import { Button } from './ui/button';
 import { Trash2, RefreshCw } from 'lucide-react';
 
 export const PatchBay: React.FC = () => {
-  const { modules, connections, connect, disconnect, resetConnections } = useAudioContext();
-  
+  const { modules, connections, connect, disconnect, resetConnections, restoreDefaultPatch } = useAudioContext();
+
   const [selectedSourceId, setSelectedSourceId] = useState<string>('');
   const [selectedDestId, setSelectedDestId] = useState<string>('');
   const [selectedDestInput, setSelectedDestInput] = useState<string>('');
-  
+
   // Filtering sources: Only audio nodes (Osc, LFO, etc.) can be sources.
   // Actually, useAudioModule outputs define valid sources.
-  const sourceOptions = Object.entries(modules).flatMap(([modId, mod]) => 
+  const sourceOptions = Object.entries(modules).flatMap(([modId, mod]) =>
     Object.keys(mod.outputs).map(nodeName => ({
       id: modId,
       node: nodeName,
@@ -41,29 +41,29 @@ export const PatchBay: React.FC = () => {
 
   const handleConnect = () => {
     if (!selectedSourceId || !selectedDestId || !selectedDestInput) return;
-    
+
     const [sourceId, sourceNode] = selectedSourceId.split(':');
     // Check self-patching
     if (sourceId === selectedDestId) {
-       // Requirement: "Source and destination cannot be the same" (module level check)
-       // But wait, can Osc1 Output connect to Osc1 Pitch? Yes, FM.
-       // Requirement says: "Paired Source and Destination values cannot be the same (eg. Osc 1 -> Osc 1)."
-       // If the user selects a Destination and it matches the Source, display validation message.
-       // Let's strictly follow requirement: "Paired Source and Destination values cannot be the same".
-       // This implies Module Level identity or exact dropdown value identity?
-       // Example: "Osc 1 -> Osc 1" implies source module == dest module.
-       // Usually FM feedback is allowed. But let's adhere to the specific text "Source and destination cannot be the same".
-       // It likely refers to the exact selection strings if they were simple.
-       // But here we have complex paths.
-       // "Source and destination cannot be the same" usually prevents infinite loops or null ops.
-       // Let's allow self-patching (FM) unless it strictly creates a feedback loop on the same node?
-       // Actually, the requirement text "eg. Osc 1 -> Osc 1" strongly suggests Module-to-same-Module patching is discouraged or the check is at Module ID level.
-       // "If the user selects a Destination and it matches the Source"
-       // Let's show a warning if Module IDs match.
+      // Requirement: "Source and destination cannot be the same" (module level check)
+      // But wait, can Osc1 Output connect to Osc1 Pitch? Yes, FM.
+      // Requirement says: "Paired Source and Destination values cannot be the same (eg. Osc 1 -> Osc 1)."
+      // If the user selects a Destination and it matches the Source, display validation message.
+      // Let's strictly follow requirement: "Paired Source and Destination values cannot be the same".
+      // This implies Module Level identity or exact dropdown value identity?
+      // Example: "Osc 1 -> Osc 1" implies source module == dest module.
+      // Usually FM feedback is allowed. But let's adhere to the specific text "Source and destination cannot be the same".
+      // It likely refers to the exact selection strings if they were simple.
+      // But here we have complex paths.
+      // "Source and destination cannot be the same" usually prevents infinite loops or null ops.
+      // Let's allow self-patching (FM) unless it strictly creates a feedback loop on the same node?
+      // Actually, the requirement text "eg. Osc 1 -> Osc 1" strongly suggests Module-to-same-Module patching is discouraged or the check is at Module ID level.
+      // "If the user selects a Destination and it matches the Source"
+      // Let's show a warning if Module IDs match.
     }
 
     connect(sourceId, sourceNode, selectedDestId, selectedDestInput);
-    
+
     // Reset selection
     setSelectedSourceId('');
     setSelectedDestId('');
@@ -77,25 +77,36 @@ export const PatchBay: React.FC = () => {
       <CardHeader className="border-b border-zinc-800 pb-4">
         <div className="flex justify-between items-center">
           <CardTitle className="text-zinc-100">Patch Bay</CardTitle>
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={resetConnections}
-            className="text-xs"
-          >
-            <RefreshCw className="w-3 h-3 mr-2" />
-            Reset / Restore Default
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetConnections}
+              className="text-xs border-zinc-700 hover:bg-zinc-800 text-zinc-400"
+            >
+              <Trash2 className="w-3 h-3 mr-2" />
+              Clear All
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={restoreDefaultPatch}
+              className="text-xs bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+            >
+              <RefreshCw className="w-3 h-3 mr-2" />
+              Restore Defaults
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
-        
+
         {/* New Connection Controls */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end bg-zinc-950/50 p-4 rounded-lg border border-zinc-800">
           <div className="space-y-2">
             <label className="text-xs font-medium text-zinc-400">Source (Output)</label>
-            <Select 
-              value={selectedSourceId} 
+            <Select
+              value={selectedSourceId}
               onValueChange={(val) => setSelectedSourceId(val)}
             >
               <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200">
@@ -113,8 +124,8 @@ export const PatchBay: React.FC = () => {
 
           <div className="space-y-2">
             <label className="text-xs font-medium text-zinc-400">Destination (Input)</label>
-            <Select 
-              value={selectedDestId ? `${selectedDestId}:${selectedDestInput}` : ''} 
+            <Select
+              value={selectedDestId ? `${selectedDestId}:${selectedDestInput}` : ''}
               onValueChange={(val) => {
                 const [modId, inputName] = val.split(':');
                 setSelectedDestId(modId);
@@ -134,8 +145,8 @@ export const PatchBay: React.FC = () => {
             </Select>
           </div>
 
-          <Button 
-            onClick={handleConnect} 
+          <Button
+            onClick={handleConnect}
             disabled={!selectedSourceId || !selectedDestId || (isSelfPatch as boolean)}
             className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
           >
@@ -159,8 +170,8 @@ export const PatchBay: React.FC = () => {
           ) : (
             <div className="grid gap-2">
               {connections.map(conn => (
-                <div 
-                  key={conn.id} 
+                <div
+                  key={conn.id}
                   className="flex items-center justify-between p-3 rounded bg-zinc-800/50 border border-zinc-700/50 group hover:border-zinc-600 transition-colors"
                 >
                   <div className="flex items-center gap-3 text-sm">

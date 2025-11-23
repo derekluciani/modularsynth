@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -17,6 +17,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   const [type, setType] = useState<OscillatorType>('sawtooth');
   const [level, setLevel] = useState(0.5);
 
+  const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
 
   useEffect(() => {
@@ -32,10 +33,13 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
     gain.gain.value = level;
 
     // Connect internal graph
+    // Connect internal graph
     osc.connect(gain);
     osc.start();
 
+    // Store nodes in state to trigger re-render and registration
     nodesRef.current = { osc, gain };
+    setNodes({ osc, gain });
 
     return () => {
       osc.stop();
@@ -47,41 +51,44 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
 
   // Handle parameter updates
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.osc.type = type;
+    if (nodes) {
+      nodes.osc.type = type;
     }
-  }, [type]);
+  }, [type, nodes]);
 
   useEffect(() => {
-    if (nodesRef.current) {
+    if (nodes && audioCtx) {
       // We use setTargetAtTime for smooth transitions if needed, or just direct assignment for UI control
       // Direct assignment is fine for this simple synth unless we get clicking
-      nodesRef.current.osc.frequency.setTargetAtTime(freq, audioCtx!.currentTime, 0.01);
+      nodes.osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.01);
     }
-  }, [freq, audioCtx]);
+  }, [freq, audioCtx, nodes]);
 
   useEffect(() => {
-    if (nodesRef.current) {
-      nodesRef.current.gain.gain.setTargetAtTime(level, audioCtx!.currentTime, 0.01);
+    if (nodes && audioCtx) {
+      nodes.gain.gain.setTargetAtTime(level, audioCtx.currentTime, 0.01);
     }
-  }, [level, audioCtx]);
+  }, [level, audioCtx, nodes]);
 
-  // Register module
-  useAudioModule(id, nodesRef.current ? {
-    type: 'Oscillator',
+  // Memoize module definition to prevent infinite loops
+  const moduleDef = useMemo(() => nodes ? {
+    type: 'Oscillator' as const,
     inputs: {
       // FM modulation usually goes to frequency
-      'pitch': nodesRef.current.osc.frequency,
-      'level': nodesRef.current.gain.gain
+      'pitch': nodes.osc.frequency,
+      'level': nodes.gain.gain
     },
     outputs: {
-      'output': nodesRef.current.gain
+      'output': nodes.gain
     },
     params: {
-      'pitch': nodesRef.current.osc.frequency,
-      'level': nodesRef.current.gain.gain
+      'pitch': nodes.osc.frequency,
+      'level': nodes.gain.gain
     }
-  } : null);
+  } : null, [nodes]);
+
+  // Register module
+  useAudioModule(id, moduleDef);
 
   return (
     <Card className="w-64 bg-zinc-900 border-zinc-800">
@@ -98,14 +105,14 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             <Label>Freq</Label>
             <span>{freq} Hz</span>
           </div>
-          <Slider 
-            value={[freq]} 
-            min={100} 
-            max={10000} 
+          <Slider
+            value={[freq]}
+            min={100}
+            max={10000}
             step={1}
             // Logarithmic scale approximation for UI feel could be added here, 
             // but strictly mapping linear slider to linear state for now
-            onValueChange={(v) => setFreq(v[0])} 
+            onValueChange={(v) => setFreq(v[0])}
             className="[&_.absolute]:bg-zinc-100"
           />
         </div>
@@ -132,11 +139,11 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             <Label>Level</Label>
             <span>{Math.round(level * 100)}%</span>
           </div>
-          <Slider 
-            value={[level]} 
-            min={0} 
-            max={1} 
-            step={0.01} 
+          <Slider
+            value={[level]}
+            min={0}
+            max={1}
+            step={0.01}
             onValueChange={(v) => setLevel(v[0])}
           />
         </div>

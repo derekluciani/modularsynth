@@ -34,5 +34,6 @@ export interface AudioContextType {
   connect: (sourceId: string, sourceNode: string, destId: string, destInput: string) => void;
   disconnect: (connectionId: string) => void;
   resetConnections: () => void;
+  restoreDefaultPatch: () => void;
   resumeContext: () => Promise<void>;
 }

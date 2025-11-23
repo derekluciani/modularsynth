@@ -170,7 +170,7 @@ These are the expected default values:
 - /src
   - components/
     - modules/
-    - primitives/ _// shadcn components here_
+    - ui/
     - PatchBay.tsx _// UI for 'connections'_
   - context/
     - AudioContextProvider.tsx
@@ -187,7 +187,8 @@ These are the expected default values:
 Please implement each task below and mark each one with an '[x]' once they are completed.
 ## Phase 1 - Setup & Core Engine
 - [x] Review all information in this document
-- [x] Scaffold Vite + React + Tailwind + shadcn/ui [(Follow this installation process)](/Users/derekluciani/repo/modularsynth/scaffoldShadcnTailwind4.md) [x] Create folder structure (ensure `public/processors/random-processor.js` exists)
+- [x] Scaffold Vite + React + Tailwind + shadcn/ui [(Follow this installation process)](/Users/derekluciani/repo/modularsynth/scaffoldShadcnTailwind4.md)
+- [x] Create folder structure (ensure `public/processors/random-processor.js` exists)
 - [x] Implement global `AudioContextProvider` (State, Context creation, AudioWorklet loading)
 - [x] Implement audio graph logic (Connect/Disconnect/Patching functions)  
 - [x] Build reusable `useAudioModule` hook
@@ -200,9 +201,10 @@ Please implement each task below and mark each one with an '[x]' once they are c
 - [x] Implement **Random** module (ensure AudioWorklet communication works)
 - [x] Implement the **Patch Bay** UI component (Global connection manager)
 ## Phase 4 - Integration & Polish
+- [ ] Review the entire codebase. Ensure there are no logic flaws, functionality issues or bugs. Move to next task if none are found.
 - [ ] Apply default routing logic & "Restore default patch" reset action 
 - [ ] Verify default routing produces audible sound on app load 
-- [ ] Apply visual design specs provided here:
+- [ ] Finish all UI component and page layout design
 - [ ] Final QA: Measure against **Success Criteria**
 
 # ! End of Document

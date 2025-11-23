@@ -44,9 +44,10 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     }
 
     return () => {
-      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-        audioCtxRef.current.close();
-      }
+      // In development (Strict Mode), this runs on immediate unmount, closing the context.
+      // We should probably not close it here to avoid issues with hot reload / strict mode.
+      // audioCtxRef.current?.close();
+      // audioCtxRef.current = null;
     };
   }, []);
 
@@ -134,6 +135,81 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     });
   }, [modules]);
 
+  const restoreDefaultPatch = useCallback(() => {
+    // First reset existing connections
+    resetConnections();
+
+    // Wait a tick to ensure state update? 
+    // Actually, since setConnections is async, we should probably chain this or just do it directly.
+    // But we can't easily chain state updates like that without effects.
+    // However, we can just calculate the new connections and set them.
+    // But we also need to make the physical audio connections.
+
+    // Let's define the default patch
+    // * LFO 1 → Osc 1 Pitch
+    // * Osc 1 → Filter 1
+    // * Osc 2 → Filter 1 
+    // * Filter 1 → Amp
+    // * Amp → Destination (AudioOut)
+
+    const defaults = [
+      { sourceId: 'lfo-1', sourceNode: 'output', destId: 'osc-1', destInput: 'pitch' },
+      { sourceId: 'osc-1', sourceNode: 'output', destId: 'filter-1', destInput: 'input' },
+      { sourceId: 'osc-2', sourceNode: 'output', destId: 'filter-1', destInput: 'input' },
+      { sourceId: 'filter-1', sourceNode: 'output', destId: 'amp-1', destInput: 'input' },
+      { sourceId: 'amp-1', sourceNode: 'output', destId: 'master', destInput: 'input' }
+    ];
+
+    // We need to wait for resetConnections to clear the physical connections?
+    // resetConnections iterates over 'connections' state.
+    // If we call connect() immediately, it might conflict if we don't clear first.
+    // But 'connect' uses 'modules' state, which is stable.
+    // The issue is 'connections' state.
+
+    // Let's do it in a timeout to allow the reset to propagate? 
+    // Or better, just manually break everything and then make new ones in one go.
+
+    // 1. Break all current connections
+    connections.forEach(c => {
+      const sourceModule = modules[c.sourceModuleId];
+      const destModule = modules[c.destModuleId];
+      if (sourceModule && destModule) {
+        breakConnection(sourceModule, c.sourceNodeName, destModule, c.destInputName, c.isParam);
+      }
+    });
+
+    // 2. Make new connections
+    const newConnections: Connection[] = [];
+
+    defaults.forEach(d => {
+      const sourceModule = modules[d.sourceId];
+      const destModule = modules[d.destId];
+
+      if (sourceModule && destModule) {
+        // Check if param or node
+        const isParam = !!destModule.params[d.destInput];
+
+        const success = makeConnection(sourceModule, d.sourceNode, destModule, d.destInput, isParam);
+
+        if (success) {
+          newConnections.push({
+            id: `${d.sourceId}-${d.sourceNode}-${d.destId}-${d.destInput}`,
+            sourceModuleId: d.sourceId,
+            sourceNodeName: d.sourceNode,
+            destModuleId: d.destId,
+            destInputName: d.destInput,
+            isParam
+          });
+        }
+      } else {
+        console.warn(`Could not make default connection: ${d.sourceId} -> ${d.destId} (Module not found)`);
+      }
+    });
+
+    setConnections(newConnections);
+
+  }, [connections, modules]);
+
   const value: AudioContextType = useMemo(() => ({
     audioCtx: audioCtxRef.current,
     isWorkletLoaded,
@@ -144,8 +220,9 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     connect,
     disconnect,
     resetConnections,
+    restoreDefaultPatch,
     resumeContext
-  }), [isWorkletLoaded, modules, connections, registerModule, unregisterModule, connect, disconnect, resetConnections, resumeContext]);
+  }), [isWorkletLoaded, modules, connections, registerModule, unregisterModule, connect, disconnect, resetConnections, restoreDefaultPatch, resumeContext]);
 
   return (
     <AudioContextReact.Provider value={value}>

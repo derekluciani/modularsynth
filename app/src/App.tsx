@@ -1,59 +1,43 @@
-import { AudioContextProvider, useAudioContext } from './context/AudioContextProvider';
+import { AudioContextProvider } from './context/AudioContextProvider';
 import { Oscillator } from './components/modules/Oscillator';
 import { AudioOut } from './components/modules/AudioOut';
-import { Button } from './components/ui/button';
+import { Filter } from './components/modules/Filter';
+import { LFO } from './components/modules/LFO';
+import { Amp } from './components/modules/Amp';
+import { Delay } from './components/modules/Delay';
+import { Random } from './components/modules/Random';
+import { PatchBay } from './components/PatchBay';
 
 const Synth = () => {
-  const { connect, disconnect, connections } = useAudioContext();
-
-  const handleTestConnection = () => {
-    // Check if already connected
-    const existing = connections.find(
-      c => c.sourceModuleId === 'osc1' && c.destModuleId === 'master'
-    );
-
-    if (existing) {
-      disconnect(existing.id);
-    } else {
-      connect('osc1', 'output', 'master', 'input');
-    }
-  };
-
-  const isConnected = connections.some(
-    c => c.sourceModuleId === 'osc1' && c.destModuleId === 'master'
-  );
-
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap justify-center gap-8 items-start">
-        <Oscillator id="osc1" name="Oscillator 1" />
-        
-        <div className="flex flex-col justify-center h-32">
-            <Button 
-              variant={isConnected ? "default" : "outline"}
-              onClick={handleTestConnection}
-              className={isConnected ? "bg-green-600 hover:bg-green-700" : ""}
-            >
-              {isConnected ? "Connected" : "Connect Osc -> Master"}
-            </Button>
-        </div>
+      {/* Top Row: Sources / Modulation */}
+      <div className="flex flex-wrap justify-center gap-4">
+        <LFO id="lfo-1" name="LFO 1" />
+        <LFO id="lfo-2" name="LFO 2" />
+        <Random id="random-1" name="Random" />
+      </div>
 
+      {/* Middle Row: Oscillators */}
+      <div className="flex flex-wrap justify-center gap-4">
+        <Oscillator id="osc-1" name="Oscillator 1" />
+        <Oscillator id="osc-2" name="Oscillator 2" />
+        <Oscillator id="osc-3" name="Oscillator 3" />
+        <Oscillator id="osc-4" name="Oscillator 4" />
+      </div>
+
+      {/* Bottom Row: Effects & Output */}
+      <div className="flex flex-wrap justify-center gap-4">
+        <Filter id="filter-1" name="Filter 1" />
+        <Filter id="filter-2" name="Filter 2" />
+        <Delay id="delay-1" name="Delay" />
+        <Amp id="amp-1" name="Amp" />
         <AudioOut id="master" />
       </div>
-      
-      <div className="max-w-md mx-auto mt-8 p-4 border border-zinc-800 rounded bg-zinc-900/50 text-xs text-zinc-400">
-        <h3 className="font-bold mb-2">Active Connections:</h3>
-        {connections.length === 0 ? (
-          <p>No connections.</p>
-        ) : (
-          <ul className="list-disc pl-4">
-            {connections.map(c => (
-              <li key={c.id}>
-                {c.sourceModuleId} ({c.sourceNodeName}) → {c.destModuleId} ({c.destInputName})
-              </li>
-            ))}
-          </ul>
-        )}
+
+      {/* Patch Bay */}
+      <div className="flex justify-center mt-12">
+        <PatchBay />
       </div>
     </div>
   );
