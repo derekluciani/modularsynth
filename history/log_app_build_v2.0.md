@@ -48,15 +48,7 @@ This phase focused on integrating all implemented modules into the main applicat
 ## Verification
 
 ### Default Patch Verification
-We verified that clicking the "Restore Defaults" button correctly establishes the default connections.
-
-**Initial State:**
-![Initial State](img/initial_load_1763928578648.png)
-
-**After Clicking "Restore Defaults":**
-![Default Connections](img/all_default_connections_1763928796991.png)
-
-The "Active Connections" list confirms that all default connections are present.
+We verified that clicking the "Restore Defaults" button correctly establishes the default connections. The "Active Connections" list confirms that all default connections are present.
 
 ## Next Steps
 - The application is now fully functional with all required modules and patching capabilities.

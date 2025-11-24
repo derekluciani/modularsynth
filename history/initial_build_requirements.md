@@ -1,4 +1,32 @@
-# Requirements  
+# Requirements 
+
+## Objective  
+* Build a functional **React-based Modular Synthesizer App** according to the requirements defined in this document.
+
+## Role & Expectations  
+* You are an expert software engineer specializing in **audio software programming**, **Web Audio API** and **React UI**.  
+* You will act as an **autonomous agent**, responsible for architecting and building the entire application.  
+* You will produce **complete, functional code** — not pseudocode or placeholders.  
+* You will implement an architecture that is flexible enough to handle **module extensibility** in the future.  
+* You will maintain an organized **file structure**.  
+* You will define **highly semantic** naming conventions for variables and objects.  
+* You will add **concise inline comments** for clarity.  
+* You will **request to run the app server** before doing so.
+* You will execute all refinements if requested.   
+
+## Success Criteria  
+* The synthesizer is fully functional in modern browsers.  
+* Audio modules function independently and support patchable connections.  
+* All module parameter values respond in real time.  
+* The initial state of the synthesizer is loaded with the **default patch**. 
+* The app runs with command: `npm run dev` 
+
+## Tech Stack  
+* **Frontend:** Vite + React  
+* **State Management:** React Context API  
+* **Audio Engine:** Web Audio API [(Read the Docs)](/Users/derekluciani/repo/modularsynth/WebAudioAPI.md)
+* **UI Components:** shadcn/ui (TypeScript, Dark Mode)  
+* **UI Styles:** Tailwind 4 (CSS Variables, 'Zinc' palette)  
 
 ## Audio System  
 * The synthesizer is composed of **independent audio modules**.  
@@ -79,7 +107,7 @@ Note: _isOutputSource_ refers to whether this specific parameter/node can send s
 | AudioOut | Master Volume | 0–1.0 | `gainNode` connected to `audioCtx.destination` | False | False | Slider |
 
 ## Module Connection Patch Bay
-The user will have the ability to connect/disconnect modules via an interactive **Patch Bay** (List of active connections). A 'Source' Select component will pair with a 'Destination' Select component.
+The user will have the ability to connect/disconnect modules via an interactive "Patch Bay" (List of active connections). A 'Source' Select component will pair with a 'Destination' Select component.
 
 **Sources (Outputs):** _(only AudioNodes can be sources)_
   - Osc 1, Osc 2, Osc 3, Osc 4
@@ -107,6 +135,9 @@ The user will have the ability to connect/disconnect modules via an interactive 
 ### Exceptions
   * **Paired Source and Destination values cannot be the same** (eg. Osc 1 → Osc 1). If the user selects a Destination and it matches the Source, display the validation message: _"Source and destination cannot be the same"_. If the user changes the Source or Destination and the values no longer match, remove the validation message.
 
+### UI
+- Create a "Clear" button that appears next to each established Source/Destination pairing. This button will enable the user to easily remove the connection. When clicked, the button disapears and the values within both input fields reset to the default placeholder.
+
 ## Default Routing
 These are the default connections that a user will expect to have when the app is launched:
 * LFO 1 → Osc 1 Pitch
@@ -114,6 +145,9 @@ These are the default connections that a user will expect to have when the app i
 * Osc 2 → Filter 1 
 * Filter 1 → Amp
 * Amp → Destination (AudioOut)
+
+### UI
+- Create a button that enables the user to "Restore default" patch. When clicked, all existing connection values reset to match the 'Default Routing' values.
 
 ## Default Parameter Values
 These are the expected default values:  
@@ -148,5 +182,31 @@ These are the expected default values:
   - styles/
     - tailwind.css
 - App.tsx
+
+# App Development Process & Task Checklist
+Please implement each task below and mark each one with an '[x]' once they are completed.
+> This checklist has been completed by the LLM
+## Phase 1 - Setup & Core Engine
+- [x] Review all information in this document
+- [x] Scaffold Vite + React + Tailwind + shadcn/ui [(Follow this installation process)](../../../.gemini/scaffoldShadcnTailwind4.md)
+- [x] Create folder structure (ensure `public/processors/random-processor.js` exists)
+- [x] Implement global `AudioContextProvider` (State, Context creation, AudioWorklet loading)
+- [x] Implement audio graph logic (Connect/Disconnect/Patching functions)  
+- [x] Build reusable `useAudioModule` hook
+## Phase 2 - Vertical Slice (Proof of Concept)  
+- [x] Implement **Oscillator** and **AudioOut** modules only
+- [x] Register these modules in `AudioContextProvider` 
+- [x] Verify: Are you able to manually connect Osc → AudioOut and register an audible sound level? (NOTE: _Fix any core bugs here!_)
+## Phase 3 - Full Module Implementation
+- [x] Implement remaining core modules (Amp, Filter, LFO, Delay)
+- [x] Implement **Random** module (ensure AudioWorklet communication works)
+- [x] Implement the **Patch Bay** UI component (Global connection manager)
+## Phase 4 - Integration & Polish
+- [x] Review the entire codebase. Ensure there are no logic flaws, functionality issues or bugs. Move to next task if none are found.
+- [x] Apply default routing logic & "Restore default patch" reset action 
+- [x] Verify default routing produces audible sound on app load 
+- [x] Create the entire visual design layout
+- [x] Verify: All UI is functionally complete
+- [x] Final QA: Measure against **Success Criteria**
 
 # ! End of Document
