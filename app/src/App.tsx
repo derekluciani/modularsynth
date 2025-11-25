@@ -7,10 +7,11 @@ import { Amp } from './components/modules/Amp';
 import { Delay } from './components/modules/Delay';
 import { Random } from './components/modules/Random';
 import { PatchBay } from './components/PatchBay';
+import { SpectrumAnalyzer } from './components/SpectrumAnalyzer';
 
 const Synth = () => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Top Row: Sources / Modulation */}
       <div className="flex flex-wrap justify-center gap-4">
         <LFO id="lfo-1" name="LFO 1" />
@@ -36,7 +37,8 @@ const Synth = () => {
       </div>
 
       {/* Patch Bay */}
-      <div className="flex justify-center mt-12">
+      <div className="flex flex-col gap-4 mt-12 max-w-4xl mx-auto">
+        <SpectrumAnalyzer />
         <PatchBay />
       </div>
     </div>

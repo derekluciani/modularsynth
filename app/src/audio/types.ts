@@ -1,4 +1,4 @@
-export type ModuleType = 
+export type ModuleType =
   | 'Oscillator'
   | 'Filter'
   | 'LFO'
@@ -26,6 +26,7 @@ export interface Connection {
 
 export interface AudioContextType {
   audioCtx: AudioContext | null;
+  analyserNode: AnalyserNode | null;
   isWorkletLoaded: boolean;
   modules: Record<string, AudioModuleRegistryItem>;
   connections: Connection[];

@@ -20,6 +20,6 @@
 ## Tech Stack  
 - **Frontend:** Vite + React  
 - **State Management:** React Context API  
-- **Audio Engine:** Web Audio API [(Read the Docs)](/Users/derekluciani/repo/modularsynth/WebAudioAPI.md)
+- **Audio Engine:** Web Audio API [(Read the Docs)](/context/WebAudioAPI.md)
 - **UI Components:** shadcn/ui (TypeScript, Dark Mode)  
 - **UI Styles:** Tailwind 4 (CSS Variables, 'Zinc' palette)

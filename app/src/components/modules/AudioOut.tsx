@@ -12,7 +12,7 @@ interface AudioOutProps {
 }
 
 export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
-  const { audioCtx, resumeContext } = useAudioContext();
+  const { audioCtx, analyserNode, resumeContext } = useAudioContext();
   const [volume, setVolume] = useState(0.75);
   const [pan, setPan] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
@@ -27,14 +27,41 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
     const panner = audioCtx.createStereoPanner();
     const gain = audioCtx.createGain();
 
+    // Connect graph: Input -> Panner -> Gain -> Analyser -> Destination
+    panner.connect(gain);
+
+    if (analyserNode) {
+      gain.connect(analyserNode);
+    } else {
+      gain.connect(audioCtx.destination);
+    }
+
     // Initial values
     panner.pan.value = pan;
     gain.gain.value = volume;
 
     // Connect graph: Input -> Panner -> Gain -> Destination
-    // Connect graph: Input -> Panner -> Gain -> Destination
-    panner.connect(gain);
-    gain.connect(audioCtx.destination);
+    // Connect graph: Input -> Panner -> Gain -> Analyser (which goes to Destination)
+    // If we have access to the global analyser via context, we should use it.
+    // However, the analyser is on the context object, but we need to access it here.
+    // We can get it from useAudioContext().
+
+    // We need to access the analyserNode from the hook, but it might not be in the destructured vars yet.
+    // Let's update the destructuring first.
+
+    // Wait, I can't update the destructuring here. I need to do it in a separate edit or assume I'll do it.
+    // Actually, I should have updated the destructuring first.
+    // But I can access it via audioCtx if I had attached it, but I didn't.
+    // I added it to the context VALUE.
+
+    // So I need to update the component to get 'analyserNode' from useAudioContext.
+
+    // This tool call is for the connection logic. I will assume 'analyserNode' is available in scope
+    // and I will update the destructuring in the next step or I should have done it in one go.
+    // I'll do the destructuring update first in a separate tool call to be safe, or just do a multi-replace.
+
+    // Let's use multi-replace for AudioOut.tsx to do both.
+    // Aborting this single replace to use multi-replace.
 
     nodesRef.current = { panner, gain };
     setNodes({ panner, gain });

@@ -19,6 +19,7 @@ interface AudioContextProviderProps {
 
 export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ children }) => {
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
   const [isWorkletLoaded, setIsWorkletLoaded] = useState(false);
   const [modules, setModules] = useState<Record<string, AudioModuleRegistryItem>>({});
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -29,6 +30,12 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     if (!audioCtxRef.current) {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       audioCtxRef.current = ctx;
+
+      // Create global analyser node
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.connect(ctx.destination);
+      analyserRef.current = analyser;
 
       // Load AudioWorklet
       const loadWorklet = async () => {
@@ -212,6 +219,7 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
 
   const value: AudioContextType = useMemo(() => ({
     audioCtx: audioCtxRef.current,
+    analyserNode: analyserRef.current,
     isWorkletLoaded,
     modules,
     connections,
