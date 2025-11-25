@@ -111,7 +111,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
     <Card className="w-48 shadow-lg shadow-black/50">
       <CardHeader className="pb-3 border-b border-zinc-800 bg-zinc-950/50">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
-          <span>Speakers</span>
+          <span>Speaker</span>
           <Button
             variant="outline"
             size="icon-lg"
@@ -146,7 +146,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             max={1}
             step={0.01}
             onValueChange={(v) => setVolume(v[0])}
-            className="[&_.absolute]:bg-slate-500"
+            className="[&_.absolute]:bg-zinc-300"
           />
         </div>
 
@@ -162,7 +162,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             max={1}
             step={0.1}
             onValueChange={(v) => setPan(v[0])}
-            className="[&_.absolute]:bg-slate-500"
+            className="[&_.absolute]:bg-zinc-300"
           />
         </div>
       </CardContent>

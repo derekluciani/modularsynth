@@ -60,7 +60,7 @@ export const SpectrumAnalyzer: React.FC = () => {
                     ref={canvasRef}
                     width={800}
                     height={150}
-                    className="w-full h-[150px] bg-zinc-950 rounded-xl"
+                    className="w-full h-[150px] bg-zinc-950"
                 />
             </CardContent>
         </Card>

@@ -6,20 +6,22 @@ import { LFO } from './components/modules/LFO';
 import { Amp } from './components/modules/Amp';
 import { Delay } from './components/modules/Delay';
 import { Random } from './components/modules/Random';
+import { Distortion } from './components/modules/Distortion';
 import { PatchBay } from './components/PatchBay';
 import { SpectrumAnalyzer } from './components/SpectrumAnalyzer';
 
 const Synth = () => {
   return (
     <div className="space-y-4">
-      {/* Top Row: Sources / Modulation */}
+      {/* Row: Modulation */}
       <div className="flex flex-wrap justify-center gap-4">
         <LFO id="lfo-1" name="LFO 1" />
         <LFO id="lfo-2" name="LFO 2" />
+        <LFO id="lfo-3" name="LFO 3" />
         <Random id="random-1" name="Random" />
       </div>
 
-      {/* Middle Row: Oscillators */}
+      {/* Row: Oscillators */}
       <div className="flex flex-wrap justify-center gap-4">
         <Oscillator id="osc-1" name="Oscillator 1" />
         <Oscillator id="osc-2" name="Oscillator 2" />
@@ -27,11 +29,16 @@ const Synth = () => {
         <Oscillator id="osc-4" name="Oscillator 4" />
       </div>
 
-      {/* Bottom Row: Effects & Output */}
+      {/* Row: EQ & Effects */}
       <div className="flex flex-wrap justify-center gap-4">
         <Filter id="filter-1" name="Filter 1" />
         <Filter id="filter-2" name="Filter 2" />
+        <Distortion id="dist-1" name="Distortion" />
         <Delay id="delay-1" name="Delay" />
+      </div>
+
+      {/* Row: Amp & Audio Out */}
+      <div className="flex flex-wrap justify-center gap-4">
         <Amp id="amp-1" name="Amp" />
         <AudioOut id="master" />
       </div>
