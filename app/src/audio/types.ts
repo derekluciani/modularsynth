@@ -5,7 +5,8 @@ export type ModuleType =
   | 'Random'
   | 'Delay'
   | 'Amp'
-  | 'AudioOut';
+  | 'AudioOut'
+  | 'Distortion';
 
 export interface AudioModuleRegistryItem {
   id: string;
