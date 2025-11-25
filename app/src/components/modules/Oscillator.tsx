@@ -107,7 +107,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
           </div>
           <Slider
             value={[freq]}
-            min={100}
+            min={20}
             max={1000}
             step={1}
             // Logarithmic scale approximation for UI feel could be added here, 
