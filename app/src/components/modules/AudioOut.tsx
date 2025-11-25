@@ -136,7 +136,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
         {/* Volume */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
-            <Label>Volume</Label>
+            <Label>Master Volume</Label>
             <span>{Math.round(volume * 100)}%</span>
           </div>
           {/* Vertical Slider attempt or just horizontal? Requirements didn't specify orientation, sticking to horizontal for consistency with other modules for now */}

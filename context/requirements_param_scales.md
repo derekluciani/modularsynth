@@ -1,23 +1,29 @@
-# **Logarithmic vs. Linear**
-- Human perception of pitch _frequency_, _amplitude_, or _time constants_ is _logarithmic_. Example: Going from pitch frequency 100→200 Hz (1 octave) should feel the same as going 1000→2000 Hz.
+# **Logarithmic vs. Linear Param Value Scaling**
+- Human perception of pitch _frequency_, _amplitude_, or _time constants_ is _logarithmic_.
+    - Example: Going from pitch frequency 100→200 Hz (1 octave) should feel the same as going 1000→2000 Hz
+- Linear is simply an amplitude multiplier.
 
-Apply the scaling function for each module parameter, listed below:
+Apply the 'Value Scale' functions for each module param:
 
 | Module                        | Param                                     | Value Scale         |
 | ----------------------------- | ------------------------------------------| ------------------- |
 | Oscillator                    | Pitch Freq                                | **Log**             |
-| LFO                           | Freq                                      | **Log**             |
+| Oscillator                    | Level (amplitude gain)                    | **Linear**          |
+| LFO                           | Rate Freq                                 | **Log**             |
 | Filter                        | Cutoff Freq                               | **Log**             |
-| Filter                        | Q                                         | **Log**             |
-| Random                        | Rate Freq                                 | **Log**             | *ASK 
-| Distortion                    | ---------                                 | **Log**             | *ASK
-| Delay                         | Time (≥1s range)                          | **Log**             |
-| Misc                          | Gain, Volume, Level (Amplitude 0.0–1.0)   | **Linear**          |
-| Misc                          | Gain (dB)                                 | **Log**          |
+| Filter                        | Resonance Q                               | **Log**             |
+| Random                        | Rate Freq                                 | **Log**             |
+| Random                        | Level (amplitude gain)                    | **Linear**          |
+| Distortion                    | Drive (amplitude gain)                    | **Linear**          |
+| Distortion                    | Amount (amplitude gain)                   | **Linear**          |
+| Delay                         | Time                                      | **Log**             |
+| Delay                         | Feedback                                  | **Log**             |
+| Amp                           | Output Gain (amplitude gain)              | **Linear**          |
 | AudioOut                      | Panning                                   | **Linear**          |
+| AudioOut                      | Master Volume* (dB gain)                  | **Log**             |
 
-
-<!-- | Delay                    | Time (≤1s range)                          | **Linear**          | -->
-<!-- | AudioOut                 | Crossfade                                 | **Linear**          | -->
-<!-- | Distortion drive         | Linear                                    | **Linear**          | -->
-<!-- | Envelope                 | ADSR                                      | **Log**             | -->
+* *'Master Volume' new values:
+    - min=-60dB
+    - max=0dB
+    - default=-6dB 
+    - step=0.5dB 

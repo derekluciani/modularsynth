@@ -102,7 +102,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
         {/* Pitch */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
-            <Label>Freq</Label>
+            <Label>Pitch</Label>
             <span>{freq} Hz</span>
           </div>
           <Slider
@@ -113,6 +113,22 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             // Logarithmic scale approximation for UI feel could be added here, 
             // but strictly mapping linear slider to linear state for now
             onValueChange={(v) => setFreq(v[0])}
+            className="[&_.absolute]:bg-emerald-500"
+          />
+        </div>
+
+        {/* Level */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-zinc-400">
+            <Label>Level</Label>
+            <span>{Math.round(level * 100)}%</span>
+          </div>
+          <Slider
+            value={[level]}
+            min={0}
+            max={1}
+            step={0.01}
+            onValueChange={(v) => setLevel(v[0])}
             className="[&_.absolute]:bg-emerald-500"
           />
         </div>
@@ -131,22 +147,6 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
               <SelectItem value="triangle">Triangle</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
-        {/* Level */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-zinc-400">
-            <Label>Level</Label>
-            <span>{Math.round(level * 100)}%</span>
-          </div>
-          <Slider
-            value={[level]}
-            min={0}
-            max={1}
-            step={0.01}
-            onValueChange={(v) => setLevel(v[0])}
-            className="[&_.absolute]:bg-emerald-500"
-          />
         </div>
       </CardContent>
     </Card>

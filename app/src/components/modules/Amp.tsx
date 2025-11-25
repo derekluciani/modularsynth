@@ -65,7 +65,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
       <CardContent>
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
-            <Label>Volume</Label>
+            <Label>Output Gain</Label>
             <span>{Math.round(gain * 100)}%</span>
           </div>
           <Slider
