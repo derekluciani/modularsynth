@@ -81,14 +81,14 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   useAudioModule(id, moduleDef);
 
   return (
-    <Card className="w-48 bg-zinc-900 border-zinc-800 shadow-lg shadow-black/50">
+    <Card className="w-48 shadow-lg shadow-black/50">
       <CardHeader className="pb-3 border-b border-zinc-800 bg-zinc-950/50">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
-          <span>Master</span>
+          <span>Speakers</span>
           <Button
-            variant="ghost"
-            size="icon"
-            className={`h-6 w-6 ${isMuted ? 'text-red-500' : 'text-green-500'}`}
+            variant="outline"
+            size="icon-lg"
+            className={`${isMuted ? 'text-red-500' : 'text-green-500'}`}
             onClick={() => setIsMuted(!isMuted)}
           >
             {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
@@ -100,10 +100,10 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
         <Button
           variant="outline"
           size="sm"
-          className="w-full text-xs border-zinc-700 hover:bg-zinc-800 hover:text-zinc-100"
+          className="w-full text-xs"
           onClick={() => resumeContext()}
         >
-          Start / Resume
+          Re-trigger audio
         </Button>
 
         {/* Volume */}
@@ -119,7 +119,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             max={1}
             step={0.01}
             onValueChange={(v) => setVolume(v[0])}
-            className="[&_.absolute]:bg-blue-500"
+            className="[&_.absolute]:bg-slate-500"
           />
         </div>
 
@@ -135,6 +135,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             max={1}
             step={0.1}
             onValueChange={(v) => setPan(v[0])}
+            className="[&_.absolute]:bg-slate-500"
           />
         </div>
       </CardContent>

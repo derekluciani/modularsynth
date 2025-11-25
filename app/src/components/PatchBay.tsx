@@ -18,7 +18,7 @@ export const PatchBay: React.FC = () => {
     Object.keys(mod.outputs).map(nodeName => ({
       id: modId,
       node: nodeName,
-      label: `${modId} > ${nodeName}`
+      label: `${modId}`
     }))
   );
 
@@ -79,21 +79,21 @@ export const PatchBay: React.FC = () => {
           <CardTitle className="text-zinc-100">Patch Bay</CardTitle>
           <div className="flex gap-2">
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={resetConnections}
-              className="text-xs border-zinc-700 hover:bg-zinc-800 text-zinc-400"
+              className="text-xs border-zinc-800 text-zinc-400"
             >
-              <Trash2 className="w-3 h-3 mr-2" />
+              <Trash2 className="w-3 h-3 mr-1" />
               Clear All
             </Button>
             <Button
               variant="default"
               size="sm"
               onClick={restoreDefaultPatch}
-              className="text-xs bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+              className="text-xs border-zinc-800 text-zinc-400"
             >
-              <RefreshCw className="w-3 h-3 mr-2" />
+              <RefreshCw className="w-3 h-3 mr-1" />
               Restore Defaults
             </Button>
           </div>
@@ -104,13 +104,13 @@ export const PatchBay: React.FC = () => {
         {/* New Connection Controls */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end bg-zinc-950/50 p-4 rounded-lg border border-zinc-800">
           <div className="space-y-2">
-            <label className="text-xs font-medium text-zinc-400">Source (Output)</label>
+            <label className="text-xs font-medium text-zinc-400">Source</label>
             <Select
               value={selectedSourceId}
               onValueChange={(val) => setSelectedSourceId(val)}
             >
               <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200">
-                <SelectValue placeholder="Select Source..." />
+                <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-60">
                 {sourceOptions.map(opt => (
@@ -123,7 +123,7 @@ export const PatchBay: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium text-zinc-400">Destination (Input)</label>
+            <label className="text-xs font-medium text-zinc-400">Destination</label>
             <Select
               value={selectedDestId ? `${selectedDestId}:${selectedDestInput}` : ''}
               onValueChange={(val) => {
@@ -133,7 +133,7 @@ export const PatchBay: React.FC = () => {
               }}
             >
               <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200">
-                <SelectValue placeholder="Select Destination..." />
+                <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-60">
                 {destOptions.map(opt => (
@@ -175,9 +175,9 @@ export const PatchBay: React.FC = () => {
                   className="flex items-center justify-between p-3 rounded bg-zinc-800/50 border border-zinc-700/50 group hover:border-zinc-600 transition-colors"
                 >
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="text-green-400 font-mono">{conn.sourceModuleId}</span>
+                    <span className="text-zinc-300 font-mono">{conn.sourceModuleId}</span>
                     <span className="text-zinc-500">→</span>
-                    <span className="text-purple-400 font-mono">{conn.destModuleId}</span>
+                    <span className="text-zinc-300 font-mono">{conn.destModuleId}</span>
                     <span className="text-zinc-600 text-xs">({conn.destInputName})</span>
                   </div>
                   <Button

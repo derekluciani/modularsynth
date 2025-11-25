@@ -50,6 +50,6 @@ This phase focused on integrating all implemented modules into the main applicat
 ### Default Patch Verification
 We verified that clicking the "Restore Defaults" button correctly establishes the default connections. The "Active Connections" list confirms that all default connections are present.
 
-## Next Steps
+<!-- ## Next Steps
 - The application is now fully functional with all required modules and patching capabilities.
-- Further testing can be done on individual module parameters and audio output quality.
+- Further testing can be done on individual module parameters and audio output quality. -->

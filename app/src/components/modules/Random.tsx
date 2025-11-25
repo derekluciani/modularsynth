@@ -77,11 +77,11 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   useAudioModule(id, moduleDef);
 
   return (
-    <Card className="w-48 bg-zinc-900 border-zinc-800">
+    <Card className="w-48">
       <CardHeader className="pb-3">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>{name}</span>
-          <div className="w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.6)]" />
+          {/* <div className="w-2 h-2 rounded-full bg-stone-500 shadow-[0_0_8px_rgba(236,72,153,0.6)]" /> */}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -100,7 +100,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             max={20}
             step={0.1}
             onValueChange={(v) => setRate(v[0])}
-            className="[&_.absolute]:bg-pink-500"
+            className="[&_.absolute]:bg-stone-500"
           />
         </div>
 
@@ -115,7 +115,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             max={1}
             step={0.01}
             onValueChange={(v) => setLevel(v[0])}
-            className="[&_.absolute]:bg-pink-500"
+            className="[&_.absolute]:bg-stone-500"
           />
         </div>
       </CardContent>
