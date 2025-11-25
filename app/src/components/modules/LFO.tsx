@@ -83,11 +83,11 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
   useAudioModule(id, moduleDef);
 
   return (
-    <Card className="w-48 bg-zinc-900 border-zinc-800">
+    <Card className="w-48">
       <CardHeader className="pb-3">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>{name}</span>
-          <div className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]" />
+          {/* <div className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]" /> */}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -98,9 +98,9 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
           </div>
           <Slider
             value={[freq]}
-            min={0.1}
-            max={20}
-            step={0.1}
+            min={0.01}
+            max={10}
+            step={0.01}
             onValueChange={(v) => setFreq(v[0])}
             className="[&_.absolute]:bg-cyan-500"
           />

@@ -91,11 +91,11 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   useAudioModule(id, moduleDef);
 
   return (
-    <Card className="w-64 bg-zinc-900 border-zinc-800">
+    <Card className="w-64">
       <CardHeader className="pb-3">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>{name}</span>
-          <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+          {/* <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" /> */}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -108,12 +108,12 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
           <Slider
             value={[freq]}
             min={100}
-            max={10000}
+            max={1000}
             step={1}
             // Logarithmic scale approximation for UI feel could be added here, 
             // but strictly mapping linear slider to linear state for now
             onValueChange={(v) => setFreq(v[0])}
-            className="[&_.absolute]:bg-zinc-100"
+            className="[&_.absolute]:bg-emerald-500"
           />
         </div>
 
@@ -145,6 +145,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             max={1}
             step={0.01}
             onValueChange={(v) => setLevel(v[0])}
+            className="[&_.absolute]:bg-emerald-500"
           />
         </div>
       </CardContent>

@@ -55,11 +55,11 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   useAudioModule(id, moduleDef);
 
   return (
-    <Card className="w-48 bg-zinc-900 border-zinc-800">
+    <Card className="w-48">
       <CardHeader className="pb-3">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>{name}</span>
-          <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+          {/* <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" /> */}
         </CardTitle>
       </CardHeader>
       <CardContent>

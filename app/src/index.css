@@ -4,6 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* The @directive will generate utility classes for each CSS variable */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -42,14 +43,15 @@
 }
 
 :root {
+  /* No @directive is used here, so only CSS variables will exist */  
   --radius: 0.625rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: oklch(14.1% 0.005 285.823);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(14.1% 0.005 285.823);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --popover-foreground: oklch(14.1% 0.005 285.823);
+  --primary: oklch(14.1% 0.005 285.823);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -67,7 +69,7 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-foreground: oklch(14.1% 0.005 285.823);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
@@ -77,9 +79,9 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(14.1% 0.005 285.823);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(14.1% 0.005 285.823);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
@@ -111,9 +113,12 @@
 }
 
 @layer base {
+  /* This applies token utilities universally */
   * {
     @apply border-border outline-ring/50;
   }
+  /* This applies token utilities to the <body> element.
+     It makes your app’s bg and fg use theme tokens*/
   body {
     @apply bg-background text-foreground;
   }
