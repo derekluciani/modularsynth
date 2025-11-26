@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
+import { linearToLog, logToLinear } from '../../audio/scales';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -14,6 +15,7 @@ interface LFOProps {
 export const LFO: React.FC<LFOProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const [freq, setFreq] = useState(5); // Hz
+  const [amount, setAmount] = useState(100); // Amplitude
   const [type, setType] = useState<OscillatorType>('sine');
 
   // LFOs typically output a signal between -1 and 1.
@@ -38,7 +40,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
 
     osc.type = type;
     osc.frequency.value = freq;
-    gain.gain.value = 1.0; // Full output by default
+    gain.gain.value = amount;
 
     // Connect internal graph
     osc.connect(gain);
@@ -67,6 +69,12 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
     }
   }, [freq, audioCtx, nodes]);
 
+  useEffect(() => {
+    if (nodes && audioCtx) {
+      nodes.gain.gain.setTargetAtTime(amount, audioCtx.currentTime, 0.01);
+    }
+  }, [amount, audioCtx, nodes]);
+
   const moduleDef = useMemo(() => nodes ? {
     type: 'LFO' as const,
     inputs: {
@@ -76,7 +84,8 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
       'output': nodes.gain
     },
     params: {
-      'frequency': nodes.osc.frequency
+      'frequency': nodes.osc.frequency,
+      'amount': nodes.gain.gain
     }
   } : null, [nodes]);
 
@@ -94,14 +103,29 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Rate</Label>
-            <span>{freq} Hz</span>
+            <span>{freq.toFixed(2)} Hz</span>
           </div>
           <Slider
-            value={[freq]}
-            min={0.01}
-            max={10}
-            step={0.01}
-            onValueChange={(v) => setFreq(v[0])}
+            value={[logToLinear(freq, 0.1, 20)]}
+            min={0}
+            max={1}
+            step={0.001}
+            onValueChange={(v) => setFreq(linearToLog(v[0], 0.1, 20))}
+            className="[&_.absolute]:bg-cyan-500"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-zinc-400">
+            <Label>Amount</Label>
+            <span>{Math.round(amount)}</span>
+          </div>
+          <Slider
+            value={[amount]}
+            min={0}
+            max={1000}
+            step={1}
+            onValueChange={(v) => setAmount(v[0])}
             className="[&_.absolute]:bg-cyan-500"
           />
         </div>

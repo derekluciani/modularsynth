@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
+import { linearToLog, logToLinear } from '../../audio/scales';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -103,16 +104,14 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Pitch</Label>
-            <span>{freq} Hz</span>
+            <span>{Math.round(freq)} Hz</span>
           </div>
           <Slider
-            value={[freq]}
-            min={20}
-            max={1000}
-            step={1}
-            // Logarithmic scale approximation for UI feel could be added here, 
-            // but strictly mapping linear slider to linear state for now
-            onValueChange={(v) => setFreq(v[0])}
+            value={[logToLinear(freq, 20, 3000)]}
+            min={0}
+            max={1}
+            step={0.001}
+            onValueChange={(v) => setFreq(linearToLog(v[0], 20, 3000))}
             className="[&_.absolute]:bg-emerald-500"
           />
         </div>

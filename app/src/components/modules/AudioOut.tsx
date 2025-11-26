@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
+import { dbToGain } from '../../audio/scales';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -13,7 +14,7 @@ interface AudioOutProps {
 
 export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   const { audioCtx, analyserNode, resumeContext } = useAudioContext();
-  const [volume, setVolume] = useState(0.75);
+  const [volume, setVolume] = useState(-6); // dB
   const [pan, setPan] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
 
@@ -38,7 +39,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
 
     // Initial values
     panner.pan.value = pan;
-    gain.gain.value = volume;
+    gain.gain.value = dbToGain(volume);
 
     // Connect graph: Input -> Panner -> Gain -> Destination
     // Connect graph: Input -> Panner -> Gain -> Analyser (which goes to Destination)
@@ -87,7 +88,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
 
   useEffect(() => {
     if (nodes && audioCtx) {
-      const targetVol = isMuted ? 0 : volume;
+      const targetVol = isMuted ? 0 : dbToGain(volume);
       nodes.gain.gain.setTargetAtTime(targetVol, audioCtx.currentTime, 0.01);
     }
   }, [volume, isMuted, audioCtx, nodes]);
@@ -137,14 +138,14 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Master Volume</Label>
-            <span>{Math.round(volume * 100)}%</span>
+            <span>{volume} dB</span>
           </div>
           {/* Vertical Slider attempt or just horizontal? Requirements didn't specify orientation, sticking to horizontal for consistency with other modules for now */}
           <Slider
             value={[volume]}
-            min={0}
-            max={1}
-            step={0.01}
+            min={-60}
+            max={0}
+            step={0.5}
             onValueChange={(v) => setVolume(v[0])}
             className="[&_.absolute]:bg-zinc-300"
           />
