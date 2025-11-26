@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
+import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -14,9 +15,11 @@ interface FilterProps {
 
 export const Filter: React.FC<FilterProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const [cutoff, setCutoff] = useState(1000);
-  const [res, setRes] = useState(1);
-  const [type, setType] = useState<BiquadFilterType>('lowpass');
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+
+  const [cutoff, setCutoff] = useState(defaultValues.cutoff ?? 1000);
+  const [res, setRes] = useState(defaultValues.res ?? 1);
+  const [type, setType] = useState<BiquadFilterType>((defaultValues.type as BiquadFilterType) ?? 'lowpass');
 
   const [nodes, setNodes] = useState<{ filter: BiquadFilterNode } | null>(null);
   const nodesRef = useRef<{ filter: BiquadFilterNode } | null>(null);
@@ -69,8 +72,14 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
     params: {
       'cutoff': nodes.filter.frequency,
       'resonance': nodes.filter.Q
+    },
+    getState: () => ({ cutoff, res, type }),
+    setState: (state: any) => {
+      if (state.cutoff !== undefined) setCutoff(state.cutoff);
+      if (state.res !== undefined) setRes(state.res);
+      if (state.type !== undefined) setType(state.type);
     }
-  } : null, [nodes]);
+  } : null, [nodes, cutoff, res, type]);
 
   useAudioModule(id, moduleDef);
 

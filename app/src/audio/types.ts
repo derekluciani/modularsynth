@@ -14,6 +14,8 @@ export interface AudioModuleRegistryItem {
   inputs: Record<string, AudioNode | AudioParam>;
   outputs: Record<string, AudioNode>;
   params: Record<string, AudioParam>;
+  getState: () => Record<string, any>;
+  setState: (state: Record<string, any>) => void;
 }
 
 export interface Connection {
@@ -38,4 +40,5 @@ export interface AudioContextType {
   resetConnections: () => void;
   restoreDefaultPatch: () => void;
   resumeContext: () => Promise<void>;
+  loadPatch: (patch: any) => void;
 }

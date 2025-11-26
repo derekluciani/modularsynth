@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import type { ReactNode } from 'react';
 import type { AudioContextType, AudioModuleRegistryItem, Connection } from '../audio/types';
 import { makeConnection, breakConnection } from '../audio/patching';
+import { DEFAULT_PATCH } from '../audio/defaultPatch';
 
 const AudioContextReact = createContext<AudioContextType | null>(null);
 
@@ -23,9 +24,9 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
   const [isWorkletLoaded, setIsWorkletLoaded] = useState(false);
   const [modules, setModules] = useState<Record<string, AudioModuleRegistryItem>>({});
   const [connections, setConnections] = useState<Connection[]>([]);
+  const hasInitializedRef = useRef(false);
 
-  // Initialize AudioContext on first interaction or mount (but usually strict autoplay rules require user interaction)
-  // We'll initialize it on mount but it will be suspended.
+  // Initialize AudioContext on first interaction or mount
   useEffect(() => {
     if (!audioCtxRef.current) {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -51,10 +52,7 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     }
 
     return () => {
-      // In development (Strict Mode), this runs on immediate unmount, closing the context.
-      // We should probably not close it here to avoid issues with hot reload / strict mode.
-      // audioCtxRef.current?.close();
-      // audioCtxRef.current = null;
+      // Cleanup if necessary
     };
   }, []);
 
@@ -112,8 +110,6 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
   }, [modules]);
 
   const disconnect = useCallback((connectionId: string) => {
-    // finding the connection in the current state
-    // but we need to break it using the current modules
     setConnections(prev => {
       const conn = prev.find(c => c.id === connectionId);
       if (!conn) return prev;
@@ -142,80 +138,73 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     });
   }, [modules]);
 
-  const restoreDefaultPatch = useCallback(() => {
-    // First reset existing connections
-    resetConnections();
-
-    // Wait a tick to ensure state update? 
-    // Actually, since setConnections is async, we should probably chain this or just do it directly.
-    // But we can't easily chain state updates like that without effects.
-    // However, we can just calculate the new connections and set them.
-    // But we also need to make the physical audio connections.
-
-    // Let's define the default patch
-    // * LFO 1 → Osc 1 Pitch
-    // * Osc 1 → Filter 1
-    // * Osc 2 → Filter 1 
-    // * Filter 1 → Amp
-    // * Amp → Destination (AudioOut)
-
-    const defaults = [
-      { sourceId: 'lfo-1', sourceNode: 'output', destId: 'osc-1', destInput: 'pitch' },
-      { sourceId: 'osc-1', sourceNode: 'output', destId: 'filter-1', destInput: 'input' },
-      { sourceId: 'osc-2', sourceNode: 'output', destId: 'filter-1', destInput: 'input' },
-      { sourceId: 'filter-1', sourceNode: 'output', destId: 'amp-1', destInput: 'input' },
-      { sourceId: 'amp-1', sourceNode: 'output', destId: 'master', destInput: 'input' }
-    ];
-
-    // We need to wait for resetConnections to clear the physical connections?
-    // resetConnections iterates over 'connections' state.
-    // If we call connect() immediately, it might conflict if we don't clear first.
-    // But 'connect' uses 'modules' state, which is stable.
-    // The issue is 'connections' state.
-
-    // Let's do it in a timeout to allow the reset to propagate? 
-    // Or better, just manually break everything and then make new ones in one go.
-
-    // 1. Break all current connections
-    connections.forEach(c => {
-      const sourceModule = modules[c.sourceModuleId];
-      const destModule = modules[c.destModuleId];
-      if (sourceModule && destModule) {
-        breakConnection(sourceModule, c.sourceNodeName, destModule, c.destInputName, c.isParam);
-      }
-    });
-
-    // 2. Make new connections
-    const newConnections: Connection[] = [];
-
-    defaults.forEach(d => {
-      const sourceModule = modules[d.sourceId];
-      const destModule = modules[d.destId];
-
-      if (sourceModule && destModule) {
-        // Check if param or node
-        const isParam = !!destModule.params[d.destInput];
-
-        const success = makeConnection(sourceModule, d.sourceNode, destModule, d.destInput, isParam);
-
-        if (success) {
-          newConnections.push({
-            id: `${d.sourceId}-${d.sourceNode}-${d.destId}-${d.destInput}`,
-            sourceModuleId: d.sourceId,
-            sourceNodeName: d.sourceNode,
-            destModuleId: d.destId,
-            destInputName: d.destInput,
-            isParam
-          });
+  const loadPatch = useCallback((patch: typeof DEFAULT_PATCH) => {
+    // 1. Reset connections
+    setConnections(prev => {
+      prev.forEach(c => {
+        const sourceModule = modules[c.sourceModuleId];
+        const destModule = modules[c.destModuleId];
+        if (sourceModule && destModule) {
+          breakConnection(sourceModule, c.sourceNodeName, destModule, c.destInputName, c.isParam);
         }
-      } else {
-        console.warn(`Could not make default connection: ${d.sourceId} -> ${d.destId} (Module not found)`);
-      }
+      });
+      return [];
     });
 
-    setConnections(newConnections);
+    // 2. Restore module states
+    if (patch.modules) {
+      Object.entries(patch.modules).forEach(([id, state]) => {
+        const mod = modules[id];
+        if (mod && mod.setState) {
+          mod.setState(state);
+        }
+      });
+    }
 
-  }, [connections, modules]);
+    // 3. Restore connections
+    setTimeout(() => {
+      const newConnections: Connection[] = [];
+
+      if (patch.connections) {
+        patch.connections.forEach(c => {
+          const sourceModule = modules[c.sourceId];
+          const destModule = modules[c.destId];
+
+          if (sourceModule && destModule) {
+            const isParam = !!destModule.params[c.destInput];
+            const success = makeConnection(sourceModule, c.sourceNode, destModule, c.destInput, isParam);
+
+            if (success) {
+              newConnections.push({
+                id: `${c.sourceId}-${c.sourceNode}-${c.destId}-${c.destInput}`,
+                sourceModuleId: c.sourceId,
+                sourceNodeName: c.sourceNode,
+                destModuleId: c.destId,
+                destInputName: c.destInput,
+                isParam
+              });
+            }
+          }
+        });
+      }
+      setConnections(newConnections);
+    }, 50);
+  }, [modules]);
+
+  const restoreDefaultPatch = useCallback(() => {
+    loadPatch(DEFAULT_PATCH);
+  }, [loadPatch]);
+
+  // Load default patch on mount
+  useEffect(() => {
+    if (!hasInitializedRef.current) {
+      const timer = setTimeout(() => {
+        restoreDefaultPatch();
+        hasInitializedRef.current = true;
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [restoreDefaultPatch]);
 
   const value: AudioContextType = useMemo(() => ({
     audioCtx: audioCtxRef.current,
@@ -229,8 +218,9 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     disconnect,
     resetConnections,
     restoreDefaultPatch,
-    resumeContext
-  }), [isWorkletLoaded, modules, connections, registerModule, unregisterModule, connect, disconnect, resetConnections, restoreDefaultPatch, resumeContext]);
+    resumeContext,
+    loadPatch
+  }), [isWorkletLoaded, modules, connections, registerModule, unregisterModule, connect, disconnect, resetConnections, restoreDefaultPatch, resumeContext, loadPatch]);
 
   return (
     <AudioContextReact.Provider value={value}>

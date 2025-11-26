@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
+import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -14,9 +15,11 @@ interface OscillatorProps {
 
 export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const [freq, setFreq] = useState(440);
-  const [type, setType] = useState<OscillatorType>('sawtooth');
-  const [level, setLevel] = useState(0.5);
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+
+  const [freq, setFreq] = useState(defaultValues.freq ?? 440);
+  const [type, setType] = useState<OscillatorType>((defaultValues.type as OscillatorType) ?? 'sine');
+  const [level, setLevel] = useState(defaultValues.level ?? 0.5);
 
   const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
@@ -85,8 +88,14 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
     params: {
       'pitch': nodes.osc.frequency,
       'level': nodes.gain.gain
+    },
+    getState: () => ({ freq, type, level }),
+    setState: (state: any) => {
+      if (state.freq !== undefined) setFreq(state.freq);
+      if (state.type !== undefined) setType(state.type);
+      if (state.level !== undefined) setLevel(state.level);
     }
-  } : null, [nodes]);
+  } : null, [nodes, freq, type, level]);
 
   // Register module
   useAudioModule(id, moduleDef);
