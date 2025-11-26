@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
+import { linearToLog, logToLinear } from '../../audio/scales';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -85,14 +86,14 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Cutoff</Label>
-            <span>{cutoff} Hz</span>
+            <span>{Math.round(cutoff)} Hz</span>
           </div>
           <Slider
-            value={[cutoff]}
-            min={60}
-            max={12000}
-            step={10}
-            onValueChange={(v) => setCutoff(v[0])}
+            value={[logToLinear(cutoff, 20, 20000)]}
+            min={0}
+            max={1}
+            step={0.001}
+            onValueChange={(v) => setCutoff(linearToLog(v[0], 20, 20000))}
             className="[&_.absolute]:bg-purple-500"
           />
         </div>
@@ -100,14 +101,14 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Resonance</Label>
-            <span>{res.toFixed(1)}</span>
+            <span>{res.toFixed(2)}</span>
           </div>
           <Slider
-            value={[res]}
-            min={0.1}
-            max={20}
-            step={0.1}
-            onValueChange={(v) => setRes(v[0])}
+            value={[logToLinear(res, 0.1, 20)]}
+            min={0}
+            max={1}
+            step={0.001}
+            onValueChange={(v) => setRes(linearToLog(v[0], 0.1, 20))}
             className="[&_.absolute]:bg-purple-500"
           />
         </div>

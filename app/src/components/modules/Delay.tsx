@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
+import { linearToLog, logToLinear } from '../../audio/scales';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -117,11 +118,11 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             <span>{time.toFixed(2)} s</span>
           </div>
           <Slider
-            value={[time]}
+            value={[logToLinear(time, 0.01, 2.0)]}
             min={0}
-            max={2.0}
-            step={0.01}
-            onValueChange={(v) => setTime(v[0])}
+            max={1}
+            step={0.001}
+            onValueChange={(v) => setTime(linearToLog(v[0], 0.01, 2.0))}
             className="[&_.absolute]:bg-blue-500"
           />
         </div>
@@ -132,11 +133,11 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             <span>{Math.round(feedback * 100)}%</span>
           </div>
           <Slider
-            value={[feedback]}
+            value={[logToLinear(feedback, 0.001, 0.99)]}
             min={0}
-            max={0.9}
-            step={0.01}
-            onValueChange={(v) => setFeedback(v[0])}
+            max={1}
+            step={0.001}
+            onValueChange={(v) => setFeedback(linearToLog(v[0], 0.001, 0.99))}
             className="[&_.absolute]:bg-blue-500"
           />
         </div>

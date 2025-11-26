@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
+import { linearToLog, logToLinear } from '../../audio/scales';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -92,14 +93,14 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Rate</Label>
-            <span>{rate} Hz</span>
+            <span>{rate.toFixed(2)} Hz</span>
           </div>
           <Slider
-            value={[rate]}
-            min={0.1}
-            max={20}
-            step={0.1}
-            onValueChange={(v) => setRate(v[0])}
+            value={[logToLinear(rate, 0.1, 20)]}
+            min={0}
+            max={1}
+            step={0.001}
+            onValueChange={(v) => setRate(linearToLog(v[0], 0.1, 20))}
             className="[&_.absolute]:bg-stone-500"
           />
         </div>

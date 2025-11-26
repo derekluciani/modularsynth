@@ -1,3 +1,5 @@
+> NOTE: This feature was implemented by Gemini3Pro/GeminiCLI. This file documents the LLM's implementation details.
+
 > START OF MODULE REQUIREMENTS
 
 # Distortion Module
