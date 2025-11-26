@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { dbToGain } from '../../audio/scales';
+import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -14,9 +15,11 @@ interface AudioOutProps {
 
 export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   const { audioCtx, analyserNode, resumeContext } = useAudioContext();
-  const [volume, setVolume] = useState(-6); // dB
-  const [pan, setPan] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+
+  const [volume, setVolume] = useState(defaultValues.volume ?? -6); // dB
+  const [pan, setPan] = useState(defaultValues.pan ?? 0);
+  const [isMuted, setIsMuted] = useState(defaultValues.isMuted ?? false);
 
   const [nodes, setNodes] = useState<{ panner: StereoPannerNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ panner: StereoPannerNode; gain: GainNode } | null>(null);
@@ -101,9 +104,16 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
     },
     outputs: {}, // No outputs, it's the final destination
     params: {
+      'volume': nodes.gain.gain,
       'pan': nodes.panner.pan
+    },
+    getState: () => ({ volume, pan, isMuted }),
+    setState: (state: any) => {
+      if (state.volume !== undefined) setVolume(state.volume);
+      if (state.pan !== undefined) setPan(state.pan);
+      if (state.isMuted !== undefined) setIsMuted(state.isMuted);
     }
-  } : null, [nodes]);
+  } : null, [nodes, volume, pan, isMuted]);
 
   // Register module
   useAudioModule(id, moduleDef);
@@ -124,7 +134,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pt-4">
-        {/* Resume Context Button (if suspended) */}
+        {/* Resume Context Button (if suspended)*/}
         <Button
           variant="outline"
           size="sm"

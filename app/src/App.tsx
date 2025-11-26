@@ -9,6 +9,7 @@ import { Random } from './components/modules/Random';
 import { Distortion } from './components/modules/Distortion';
 import { PatchBay } from './components/PatchBay';
 import { SpectrumAnalyzer } from './components/SpectrumAnalyzer';
+import { PresetManager } from './components/PresetManager';
 
 const Synth = () => {
   return (
@@ -53,9 +54,12 @@ function App() {
     <AudioContextProvider>
       <div className="min-h-screen bg-zinc-950 text-zinc-50 p-8">
         <div className="flex justify-center items-baseline gap-4 mb-12">
-          <h1 className="text-3xl font-bold tracking-tight">Modular Synth</h1>
-          <h1 className="text-md font-serif text-zinc-500">v2.2</h1>
-        </div>  
+          <h1 className="text-3xl font-bold tracking-tight">Modular Synthesizer</h1>
+          <h1 className="text-md font-serif text-zinc-500">v2.3</h1>
+          <div className="ml-auto">
+            <PresetManager />
+          </div>
+        </div>
         <div className="max-w-6xl mx-auto">
           <Synth />
         </div>

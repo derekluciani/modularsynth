@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
+import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -13,8 +14,10 @@ interface DelayProps {
 
 export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const [time, setTime] = useState(0.5);
-  const [feedback, setFeedback] = useState(0.3);
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+
+  const [time, setTime] = useState(defaultValues.time ?? 0.3);
+  const [feedback, setFeedback] = useState(defaultValues.feedback ?? 0.4);
 
   const [nodes, setNodes] = useState<{ delay: DelayNode; feedbackGain: GainNode; inputGain: GainNode; outputGain: GainNode } | null>(null);
   const nodesRef = useRef<{ delay: DelayNode; feedbackGain: GainNode; inputGain: GainNode; outputGain: GainNode } | null>(null);
@@ -98,8 +101,13 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
     params: {
       'time': nodes.delay.delayTime,
       'feedback': nodes.feedbackGain.gain
+    },
+    getState: () => ({ time, feedback }),
+    setState: (state: any) => {
+      if (state.time !== undefined) setTime(state.time);
+      if (state.feedback !== undefined) setFeedback(state.feedback);
     }
-  } : null, [nodes]);
+  } : null, [nodes, time, feedback]);
 
   useAudioModule(id, moduleDef);
 

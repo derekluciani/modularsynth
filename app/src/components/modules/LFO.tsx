@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
+import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -14,9 +15,11 @@ interface LFOProps {
 
 export const LFO: React.FC<LFOProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const [freq, setFreq] = useState(5); // Hz
-  const [amount, setAmount] = useState(100); // Amplitude
-  const [type, setType] = useState<OscillatorType>('sine');
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+
+  const [freq, setFreq] = useState(defaultValues.freq ?? 1); // Hz
+  const [amount, setAmount] = useState(defaultValues.amount ?? 0.5); // Amplitude
+  const [type, setType] = useState<OscillatorType>((defaultValues.type as OscillatorType) ?? 'sine');
 
   // LFOs typically output a signal between -1 and 1.
   // We need a gain node to potentially scale this, but usually the LFO module itself just outputs the raw wave
@@ -86,8 +89,14 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
     params: {
       'frequency': nodes.osc.frequency,
       'amount': nodes.gain.gain
+    },
+    getState: () => ({ freq, amount, type }),
+    setState: (state: any) => {
+      if (state.freq !== undefined) setFreq(state.freq);
+      if (state.amount !== undefined) setAmount(state.amount);
+      if (state.type !== undefined) setType(state.type);
     }
-  } : null, [nodes]);
+  } : null, [nodes, freq, amount, type]);
 
   useAudioModule(id, moduleDef);
 
@@ -106,11 +115,11 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
             <span>{freq.toFixed(2)} Hz</span>
           </div>
           <Slider
-            value={[logToLinear(freq, 0.1, 20)]}
+            value={[logToLinear(freq, 0.1, 12)]}
             min={0}
             max={1}
             step={0.001}
-            onValueChange={(v) => setFreq(linearToLog(v[0], 0.1, 20))}
+            onValueChange={(v) => setFreq(linearToLog(v[0], 0.1, 12))}
             className="[&_.absolute]:bg-cyan-500"
           />
         </div>

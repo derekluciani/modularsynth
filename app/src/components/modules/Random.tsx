@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
+import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -13,8 +14,10 @@ interface RandomProps {
 
 export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const { audioCtx, isWorkletLoaded } = useAudioContext();
-  const [rate, setRate] = useState(1);
-  const [level, setLevel] = useState(1);
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+
+  const [rate, setRate] = useState(defaultValues.rate ?? 1);
+  const [level, setLevel] = useState(defaultValues.level ?? 0.5);
 
   const [nodes, setNodes] = useState<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
@@ -72,8 +75,13 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
     params: {
       'rate': nodes.worklet.parameters.get('rate') as AudioParam,
       'level': nodes.gain.gain
+    },
+    getState: () => ({ rate, level }),
+    setState: (state: any) => {
+      if (state.rate !== undefined) setRate(state.rate);
+      if (state.level !== undefined) setLevel(state.level);
     }
-  } : null, [nodes]);
+  } : null, [nodes, rate, level]);
 
   useAudioModule(id, moduleDef);
 

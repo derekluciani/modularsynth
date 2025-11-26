@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
+import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Label } from '../ui/label';
@@ -12,7 +13,9 @@ interface AmpProps {
 
 export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const [gain, setGain] = useState(0.5);
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+
+  const [gain, setGain] = useState(defaultValues.gain ?? 0.5);
 
   const [nodes, setNodes] = useState<{ gain: GainNode } | null>(null);
   const nodesRef = useRef<{ gain: GainNode } | null>(null);
@@ -49,8 +52,12 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
     },
     params: {
       'gain': nodes.gain.gain
+    },
+    getState: () => ({ gain }),
+    setState: (state: any) => {
+      if (state.gain !== undefined) setGain(state.gain);
     }
-  } : null, [nodes]);
+  } : null, [nodes, gain]);
 
   useAudioModule(id, moduleDef);
 

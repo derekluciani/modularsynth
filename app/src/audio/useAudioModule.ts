@@ -3,7 +3,7 @@ import { useAudioContext } from '../context/AudioContextProvider';
 import type { AudioModuleRegistryItem } from './types';
 
 export const useAudioModule = (
-  id: string, 
+  id: string,
   definition: Omit<AudioModuleRegistryItem, 'id'> | null
 ) => {
   const { registerModule, unregisterModule } = useAudioContext();

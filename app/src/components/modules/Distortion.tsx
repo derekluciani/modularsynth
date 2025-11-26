@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useAudioContext } from '../../context/AudioContextProvider';
 import { useAudioModule } from '../../audio/useAudioModule';
+import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Slider } from '../ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -16,7 +17,7 @@ function makeDistortionCurve(amount: number) {
   const n_samples = 44100;
   const curve = new Float32Array(n_samples);
   const deg = Math.PI / 180;
-  
+
   for (let i = 0; i < n_samples; ++i) {
     const x = i * 2 / n_samples - 1;
     curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
@@ -26,11 +27,12 @@ function makeDistortionCurve(amount: number) {
 
 export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+
   // Params
-  const [drive, setDrive] = useState(1.0); // Pre-gain (0 to 5)
-  const [amount, setAmount] = useState(50); // Curve amount (0 to 100)
-  const [oversample, setOversample] = useState<OverSampleType>('4x');
+  const [drive, setDrive] = useState(defaultValues.drive ?? 0); // Pre-gain (0 to 5)
+  const [amount, setAmount] = useState(defaultValues.amount ?? 0); // Curve amount (0 to 100)
+  const [oversample, setOversample] = useState<OverSampleType>((defaultValues.oversample as OverSampleType) ?? 'none');
 
   const [nodes, setNodes] = useState<{ preGain: GainNode; shaper: WaveShaperNode; postGain: GainNode } | null>(null);
   const nodesRef = useRef<{ preGain: GainNode; shaper: WaveShaperNode; postGain: GainNode } | null>(null);
@@ -95,8 +97,14 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
     },
     params: {
       'drive': nodes.preGain.gain
+    },
+    getState: () => ({ drive, amount, oversample }),
+    setState: (state: any) => {
+      if (state.drive !== undefined) setDrive(state.drive);
+      if (state.amount !== undefined) setAmount(state.amount);
+      if (state.oversample !== undefined) setOversample(state.oversample);
     }
-  } : null, [nodes]);
+  } : null, [nodes, drive, amount, oversample]);
 
   useAudioModule(id, moduleDef);
 
