@@ -1,3 +1,5 @@
+> NOTE: This file was the implementation plan define by Gemini3Pro/Antigravity.
+
 # Preset Management System
 
 ## Goal

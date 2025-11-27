@@ -1,3 +1,5 @@
+> NOTE: This file was an input for Gemini3Pro/Antigravity to define an implementation plan.
+
 # Feature Request 
 
 ## User Goal  
