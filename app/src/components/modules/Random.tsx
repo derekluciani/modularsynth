@@ -123,14 +123,14 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Level</Label>
-            <span>{Math.round(level * 100)}%</span>
+            <span>{level === 0 ? '0' : level < 1 ? level.toFixed(3) : Math.round(level)}</span>
           </div>
           <Slider
-            value={[level]}
+            value={[level === 0 ? 0 : logToLinear(level, 0.001, 1000)]}
             min={0}
             max={1}
-            step={0.01}
-            onValueChange={(v) => setLevel(v[0])}
+            step={0.001}
+            onValueChange={(v) => setLevel(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))}
             className="[&_.absolute]:bg-stone-500"
           />
         </div>
