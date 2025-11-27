@@ -41,6 +41,10 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
     }
   }, [gain, audioCtx, nodes]);
 
+  // Refs for state access in moduleDef
+  const gainRef = useRef(gain);
+  useEffect(() => { gainRef.current = gain; }, [gain]);
+
   const moduleDef = useMemo(() => nodes ? {
     type: 'Amp' as const,
     inputs: {
@@ -53,11 +57,11 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
     params: {
       'gain': nodes.gain.gain
     },
-    getState: () => ({ gain }),
+    getState: () => ({ gain: gainRef.current }),
     setState: (state: any) => {
       if (state.gain !== undefined) setGain(state.gain);
     }
-  } : null, [nodes, gain]);
+  } : null, [nodes]);
 
   useAudioModule(id, moduleDef);
 

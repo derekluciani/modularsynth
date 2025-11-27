@@ -74,6 +74,15 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
     }
   }, [level, audioCtx, nodes]);
 
+  // Refs for state access in moduleDef without triggering re-memoization
+  const freqRef = useRef(freq);
+  const typeRef = useRef(type);
+  const levelRef = useRef(level);
+
+  useEffect(() => { freqRef.current = freq; }, [freq]);
+  useEffect(() => { typeRef.current = type; }, [type]);
+  useEffect(() => { levelRef.current = level; }, [level]);
+
   // Memoize module definition to prevent infinite loops
   const moduleDef = useMemo(() => nodes ? {
     type: 'Oscillator' as const,
@@ -89,13 +98,13 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
       'pitch': nodes.osc.frequency,
       'level': nodes.gain.gain
     },
-    getState: () => ({ freq, type, level }),
+    getState: () => ({ freq: freqRef.current, type: typeRef.current, level: levelRef.current }),
     setState: (state: any) => {
       if (state.freq !== undefined) setFreq(state.freq);
       if (state.type !== undefined) setType(state.type);
       if (state.level !== undefined) setLevel(state.level);
     }
-  } : null, [nodes, freq, type, level]);
+  } : null, [nodes]); // Removed state dependencies
 
   // Register module
   useAudioModule(id, moduleDef);

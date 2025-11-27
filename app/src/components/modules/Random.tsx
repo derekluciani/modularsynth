@@ -64,6 +64,13 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
     }
   }, [level, audioCtx, nodes]);
 
+  // Refs for state access in moduleDef
+  const rateRef = useRef(rate);
+  const levelRef = useRef(level);
+
+  useEffect(() => { rateRef.current = rate; }, [rate]);
+  useEffect(() => { levelRef.current = level; }, [level]);
+
   const moduleDef = useMemo(() => nodes ? {
     type: 'Random' as const,
     inputs: {
@@ -76,12 +83,12 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
       'rate': nodes.worklet.parameters.get('rate') as AudioParam,
       'level': nodes.gain.gain
     },
-    getState: () => ({ rate, level }),
+    getState: () => ({ rate: rateRef.current, level: levelRef.current }),
     setState: (state: any) => {
       if (state.rate !== undefined) setRate(state.rate);
       if (state.level !== undefined) setLevel(state.level);
     }
-  } : null, [nodes, rate, level]);
+  } : null, [nodes]);
 
   useAudioModule(id, moduleDef);
 

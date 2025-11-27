@@ -55,7 +55,7 @@ function App() {
       <div className="min-h-screen bg-zinc-950 text-zinc-50 p-8">
         <div className="flex justify-center items-baseline gap-4 mb-12">
           <h1 className="text-3xl font-bold tracking-tight">Modular Synthesizer</h1>
-          <h1 className="text-md font-serif text-zinc-500">v2.3</h1>
+          <h1 className="text-md font-serif text-zinc-500">v2.4</h1>
           <div className="ml-auto">
             <PresetManager />
           </div>

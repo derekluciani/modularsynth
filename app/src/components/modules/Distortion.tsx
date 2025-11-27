@@ -86,6 +86,15 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
     }
   }, [oversample, nodes]);
 
+  // Refs for state access in moduleDef
+  const driveRef = useRef(drive);
+  const amountRef = useRef(amount);
+  const oversampleRef = useRef(oversample);
+
+  useEffect(() => { driveRef.current = drive; }, [drive]);
+  useEffect(() => { amountRef.current = amount; }, [amount]);
+  useEffect(() => { oversampleRef.current = oversample; }, [oversample]);
+
   // Register Module
   const moduleDef = useMemo(() => nodes ? {
     type: 'Distortion' as const,
@@ -98,13 +107,13 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
     params: {
       'drive': nodes.preGain.gain
     },
-    getState: () => ({ drive, amount, oversample }),
+    getState: () => ({ drive: driveRef.current, amount: amountRef.current, oversample: oversampleRef.current }),
     setState: (state: any) => {
       if (state.drive !== undefined) setDrive(state.drive);
       if (state.amount !== undefined) setAmount(state.amount);
       if (state.oversample !== undefined) setOversample(state.oversample);
     }
-  } : null, [nodes, drive, amount, oversample]);
+  } : null, [nodes]);
 
   useAudioModule(id, moduleDef);
 

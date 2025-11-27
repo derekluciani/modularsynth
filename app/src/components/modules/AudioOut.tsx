@@ -96,6 +96,15 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
     }
   }, [volume, isMuted, audioCtx, nodes]);
 
+  // Refs for state access in moduleDef
+  const volumeRef = useRef(volume);
+  const panRef = useRef(pan);
+  const isMutedRef = useRef(isMuted);
+
+  useEffect(() => { volumeRef.current = volume; }, [volume]);
+  useEffect(() => { panRef.current = pan; }, [pan]);
+  useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
+
   // Memoize module definition
   const moduleDef = useMemo(() => nodes ? {
     type: 'AudioOut' as const,
@@ -107,13 +116,13 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
       'volume': nodes.gain.gain,
       'pan': nodes.panner.pan
     },
-    getState: () => ({ volume, pan, isMuted }),
+    getState: () => ({ volume: volumeRef.current, pan: panRef.current, isMuted: isMutedRef.current }),
     setState: (state: any) => {
       if (state.volume !== undefined) setVolume(state.volume);
       if (state.pan !== undefined) setPan(state.pan);
       if (state.isMuted !== undefined) setIsMuted(state.isMuted);
     }
-  } : null, [nodes, volume, pan, isMuted]);
+  } : null, [nodes]);
 
   // Register module
   useAudioModule(id, moduleDef);

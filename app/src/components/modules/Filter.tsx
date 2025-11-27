@@ -59,6 +59,15 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
     }
   }, [res, audioCtx, nodes]);
 
+  // Refs for state access in moduleDef
+  const cutoffRef = useRef(cutoff);
+  const resRef = useRef(res);
+  const typeRef = useRef(type);
+
+  useEffect(() => { cutoffRef.current = cutoff; }, [cutoff]);
+  useEffect(() => { resRef.current = res; }, [res]);
+  useEffect(() => { typeRef.current = type; }, [type]);
+
   const moduleDef = useMemo(() => nodes ? {
     type: 'Filter' as const,
     inputs: {
@@ -73,13 +82,13 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
       'cutoff': nodes.filter.frequency,
       'resonance': nodes.filter.Q
     },
-    getState: () => ({ cutoff, res, type }),
+    getState: () => ({ cutoff: cutoffRef.current, res: resRef.current, type: typeRef.current }),
     setState: (state: any) => {
       if (state.cutoff !== undefined) setCutoff(state.cutoff);
       if (state.res !== undefined) setRes(state.res);
       if (state.type !== undefined) setType(state.type);
     }
-  } : null, [nodes, cutoff, res, type]);
+  } : null, [nodes]);
 
   useAudioModule(id, moduleDef);
 

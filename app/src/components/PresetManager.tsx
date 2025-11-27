@@ -88,7 +88,7 @@ export const PresetManager: React.FC = () => {
 
         setNewPresetName('');
         setIsSaveDialogOpen(false);
-        window.location.reload();
+        // window.location.reload(); // Removed to prevent resetting to default patch
     };
 
     const exportPatch = () => {

@@ -88,6 +88,13 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
     }
   }, [feedback, audioCtx, nodes]);
 
+  // Refs for state access in moduleDef
+  const timeRef = useRef(time);
+  const feedbackRef = useRef(feedback);
+
+  useEffect(() => { timeRef.current = time; }, [time]);
+  useEffect(() => { feedbackRef.current = feedback; }, [feedback]);
+
   const moduleDef = useMemo(() => nodes ? {
     type: 'Delay' as const,
     inputs: {
@@ -102,12 +109,12 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
       'time': nodes.delay.delayTime,
       'feedback': nodes.feedbackGain.gain
     },
-    getState: () => ({ time, feedback }),
+    getState: () => ({ time: timeRef.current, feedback: feedbackRef.current }),
     setState: (state: any) => {
       if (state.time !== undefined) setTime(state.time);
       if (state.feedback !== undefined) setFeedback(state.feedback);
     }
-  } : null, [nodes, time, feedback]);
+  } : null, [nodes]);
 
   useAudioModule(id, moduleDef);
 

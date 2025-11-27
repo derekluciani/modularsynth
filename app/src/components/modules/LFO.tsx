@@ -78,6 +78,15 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
     }
   }, [amount, audioCtx, nodes]);
 
+  // Refs for state access in moduleDef
+  const freqRef = useRef(freq);
+  const amountRef = useRef(amount);
+  const typeRef = useRef(type);
+
+  useEffect(() => { freqRef.current = freq; }, [freq]);
+  useEffect(() => { amountRef.current = amount; }, [amount]);
+  useEffect(() => { typeRef.current = type; }, [type]);
+
   const moduleDef = useMemo(() => nodes ? {
     type: 'LFO' as const,
     inputs: {
@@ -90,13 +99,13 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
       'frequency': nodes.osc.frequency,
       'amount': nodes.gain.gain
     },
-    getState: () => ({ freq, amount, type }),
+    getState: () => ({ freq: freqRef.current, amount: amountRef.current, type: typeRef.current }),
     setState: (state: any) => {
       if (state.freq !== undefined) setFreq(state.freq);
       if (state.amount !== undefined) setAmount(state.amount);
       if (state.type !== undefined) setType(state.type);
     }
-  } : null, [nodes, freq, amount, type]);
+  } : null, [nodes]);
 
   useAudioModule(id, moduleDef);
 
