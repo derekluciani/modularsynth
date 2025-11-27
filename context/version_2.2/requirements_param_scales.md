@@ -19,7 +19,7 @@ Apply the 'Scale Type' functions for each module param:
 | Distortion                    | Drive (amplitude gain)                    | **Linear**          |
 | Distortion                    | Amount (amplitude gain)                   | **Linear**          |
 | Delay                         | Time                                      | **Log**             |
-| Delay                         | Feedback                                  | **Log**             |
+| Delay                         | Feedback                                  | **Linear**          |
 | Amp                           | Output Gain (amplitude gain)              | **Linear**          |
 | AudioOut                      | Panning                                   | **Linear**          |
 | AudioOut                      | Master Volume* (dB gain)                  | **Log**             |
