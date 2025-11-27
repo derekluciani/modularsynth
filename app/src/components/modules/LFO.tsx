@@ -136,14 +136,14 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Amount</Label>
-            <span>{Math.round(amount)}</span>
+            <span>{amount === 0 ? '0' : amount < 1 ? amount.toFixed(3) : Math.round(amount)}</span>
           </div>
           <Slider
-            value={[amount]}
+            value={[amount === 0 ? 0 : logToLinear(amount, 0.001, 1000)]}
             min={0}
-            max={1000}
-            step={1}
-            onValueChange={(v) => setAmount(v[0])}
+            max={1}
+            step={0.001}
+            onValueChange={(v) => setAmount(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))}
             className="[&_.absolute]:bg-cyan-500"
           />
         </div>

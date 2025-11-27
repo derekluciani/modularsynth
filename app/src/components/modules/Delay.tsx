@@ -145,14 +145,14 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Repeats</Label>
-            <span>{Math.round(feedback * 100)}%</span>
+            <span>{feedback.toFixed(2)}</span>
           </div>
           <Slider
-            value={[logToLinear(feedback, 0.001, 0.99)]}
+            value={[feedback]}
             min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setFeedback(linearToLog(v[0], 0.001, 0.99))}
+            max={0.9}
+            step={0.01}
+            onValueChange={(v) => setFeedback(v[0])}
             className="[&_.absolute]:bg-blue-500"
           />
         </div>
