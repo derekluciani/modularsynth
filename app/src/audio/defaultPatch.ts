@@ -2,10 +2,10 @@ export const DEFAULT_PATCH = {
     "name": "Basic Patch",
     "patchID": 1764165557952,
     "modules": {
-        "amp-1": {
+        "amp": {
             "gain": 0.5
         },
-        "master": {
+        "speaker": {
             "volume": -6,
             "pan": 0,
             "isMuted": false
@@ -15,12 +15,12 @@ export const DEFAULT_PATCH = {
             "res": 0.1,
             "type": "lowpass"
         },
-        "dist-1": {
+        "distort": {
             "drive": 0,
             "amount": 0,
             "oversample": "4x"
         },
-        "delay-1": {
+        "delay": {
             "time": 0.01,
             "feedback": 0.001
         },
@@ -29,7 +29,7 @@ export const DEFAULT_PATCH = {
             "type": "sawtooth",
             "level": 0
         },
-        "random-1": {
+        "random": {
             "rate": 0.1,
             "level": 0
         },
@@ -71,15 +71,15 @@ export const DEFAULT_PATCH = {
     },
     "connections": [
         {
-            "sourceId": "amp-1",
+            "sourceId": "amp",
             "sourceNode": "output",
-            "destId": "master",
+            "destId": "speaker",
             "destInput": "input"
         },
         {
             "sourceId": "filter-1",
             "sourceNode": "output",
-            "destId": "amp-1",
+            "destId": "amp",
             "destInput": "input"
         },
         {

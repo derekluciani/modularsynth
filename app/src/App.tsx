@@ -32,13 +32,13 @@ const Synth = () => {
       <div className="flex flex-wrap justify-center gap-4">
         <Filter id="filter-1" name="Filter 1" />
         <Filter id="filter-2" name="Filter 2" />
-        <Distortion id="dist-1" name="Distortion" />
-        <Delay id="delay-1" name="Delay" />
+        <Distortion id="distort" name="Distortion" />
+        <Delay id="delay" name="Delay" />
       </div>
       {/* Row: Amp & Audio Out */}
       <div className="flex flex-wrap justify-center gap-4">
-        <Amp id="amp-1" name="Amp" />
-        <AudioOut id="master" />
+        <Amp id="amp" name="Amp" />
+        <AudioOut id="speaker" />
       </div>
       {/* Patch Bay */}
       <div className="flex flex-col gap-4 mt-12 max-w-4xl mx-auto">

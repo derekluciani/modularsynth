@@ -202,7 +202,7 @@ export const PresetManager: React.FC = () => {
                         />
                     </div>
                     <DialogFooter>
-                        <Button onClick={savePatch} className="bg-emerald-600 hover:bg-emerald-700 text-white">Save</Button>
+                        <Button onClick={savePatch} className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200">Save</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

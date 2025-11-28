@@ -144,7 +144,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
 
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
-            <Label>Repeats</Label>
+            <Label>Feedback</Label>
             <span>{feedback.toFixed(2)}</span>
           </div>
           <Slider
