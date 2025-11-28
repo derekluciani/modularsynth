@@ -66,7 +66,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   useAudioModule(id, moduleDef);
 
   return (
-    <Card className="w-48">
+    <Card className="grow">
       <CardHeader className="pb-3">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>{name}</span>

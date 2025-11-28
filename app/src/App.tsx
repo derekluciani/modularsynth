@@ -13,36 +13,34 @@ import { PresetManager } from './components/PresetManager';
 
 const Synth = () => {
   return (
-    <div className="space-y-4">
-      {/* Row: Modulation */}
-      <div className="flex flex-wrap justify-center gap-4">
-        <LFO id="lfo-1" name="LFO 1" />
-        <LFO id="lfo-2" name="LFO 2" />
-        <LFO id="lfo-3" name="LFO 3" />
-        <Random id="random" name="Random" />
-      </div>
+    <div className="space-y-2">
+      {/* Row: Visualizer */}
+      <SpectrumAnalyzer />
       {/* Row: Oscillators */}
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-2">
         <Oscillator id="osc-1" name="Oscillator 1" />
         <Oscillator id="osc-2" name="Oscillator 2" />
         <Oscillator id="osc-3" name="Oscillator 3" />
         <Oscillator id="osc-4" name="Oscillator 4" />
       </div>
       {/* Row: EQ & Effects */}
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-2">
         <Filter id="filter-1" name="Filter 1" />
         <Filter id="filter-2" name="Filter 2" />
         <Distortion id="distort" name="Distortion" />
         <Delay id="delay" name="Delay" />
+        <Random id="random" name="Random" />
       </div>
       {/* Row: Amp & Audio Out */}
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-2">
+        <LFO id="lfo-1" name="LFO 1" />
+        <LFO id="lfo-2" name="LFO 2" />
+        <LFO id="lfo-3" name="LFO 3" />
         <Amp id="amp" name="Amp" />
         <AudioOut id="speaker" />
       </div>
       {/* Patch Bay */}
-      <div className="flex flex-col gap-4 mt-12 max-w-4xl mx-auto">
-        <SpectrumAnalyzer />
+      <div className="flex flex-wrap justify-center gap-4 mt-12">
         <PatchBay />
       </div>
     </div>

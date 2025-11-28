@@ -93,11 +93,10 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
   useAudioModule(id, moduleDef);
 
   return (
-    <Card className="w-64">
+    <Card className="grow">
       <CardHeader className="pb-3">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>{name}</span>
-          {/* <div className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]" /> */}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

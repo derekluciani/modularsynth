@@ -127,7 +127,7 @@ export const PatchBay: React.FC = () => {
   const isSelfPatch = selectedSourceId && selectedDestId && selectedSourceId.split(':')[0] === selectedDestId;
 
   return (
-    <Card className="w-full max-w-4xl bg-zinc-900 border-zinc-800 shadow-lg">
+    <Card className="grow max-w-2xl bg-zinc-900 border-zinc-800 shadow-lg">
       <CardHeader className="border-b border-zinc-800 pb-4">
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl  text-zinc-100">Patch Bay</CardTitle>
