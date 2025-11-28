@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
 import { useAudioContext } from '../context/AudioContextProvider';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from './ui/select';
 import { Button } from './ui/button';
 import { Trash2, RefreshCw } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 export const PatchBay: React.FC = () => {
   const { modules, connections, connect, disconnect, resetConnections, restoreDefaultPatch } = useAudioContext();
@@ -11,6 +21,16 @@ export const PatchBay: React.FC = () => {
   const [selectedSourceId, setSelectedSourceId] = useState<string>('');
   const [selectedDestId, setSelectedDestId] = useState<string>('');
   const [selectedDestInput, setSelectedDestInput] = useState<string>('');
+
+  // Alert Dialog State
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertContent, setAlertContent] = useState({ title: '', description: '' });
+  const [pendingConnection, setPendingConnection] = useState<{
+    sourceId: string;
+    sourceNode: string;
+    destId: string;
+    destInput: string;
+  } | null>(null);
 
   // Filtering sources: Only audio nodes (Osc, LFO, etc.) can be sources.
   // Actually, useAudioModule outputs define valid sources.
@@ -23,48 +43,82 @@ export const PatchBay: React.FC = () => {
   );
 
   // Filtering destinations: Inputs and Params
-  const destOptions = Object.entries(modules).flatMap(([modId, mod]) => {
-    const inputs = Object.keys(mod.inputs).map(inputName => ({
+  const destInputs = Object.entries(modules).flatMap(([modId, mod]) => {
+    const paramKeys = new Set(Object.keys(mod.params));
+    // Only include inputs that are NOT in params (i.e. pure audio inputs)
+    const audioInputs = Object.keys(mod.inputs).filter(k => !paramKeys.has(k));
+
+    return audioInputs.map(inputName => ({
       id: modId,
       input: inputName,
       type: 'input',
-      label: `${modId} > ${inputName} (Input)`
+      // If module has only one audio input, use just the module ID as label
+      label: audioInputs.length === 1 ? `${modId}` : `${modId} ${inputName}`
     }));
-    const params = Object.keys(mod.params).map(paramName => ({
+  });
+
+  const destParams = Object.entries(modules).flatMap(([modId, mod]) =>
+    Object.keys(mod.params).map(paramName => ({
       id: modId,
       input: paramName,
       type: 'param',
-      label: `${modId} > ${paramName} (Param)`
-    }));
-    return [...inputs, ...params];
-  });
+      label: `${modId} ${paramName}`
+    }))
+  );
 
   const handleConnect = () => {
     if (!selectedSourceId || !selectedDestId || !selectedDestInput) return;
 
     const [sourceId, sourceNode] = selectedSourceId.split(':');
-    // Check self-patching
-    if (sourceId === selectedDestId) {
-      // Requirement: "Source and destination cannot be the same" (module level check)
-      // But wait, can Osc1 Output connect to Osc1 Pitch? Yes, FM.
-      // Requirement says: "Paired Source and Destination values cannot be the same (eg. Osc 1 -> Osc 1)."
-      // If the user selects a Destination and it matches the Source, display validation message.
-      // Let's strictly follow requirement: "Paired Source and Destination values cannot be the same".
-      // This implies Module Level identity or exact dropdown value identity?
-      // Example: "Osc 1 -> Osc 1" implies source module == dest module.
-      // Usually FM feedback is allowed. But let's adhere to the specific text "Source and destination cannot be the same".
-      // It likely refers to the exact selection strings if they were simple.
-      // But here we have complex paths.
-      // "Source and destination cannot be the same" usually prevents infinite loops or null ops.
-      // Let's allow self-patching (FM) unless it strictly creates a feedback loop on the same node?
-      // Actually, the requirement text "eg. Osc 1 -> Osc 1" strongly suggests Module-to-same-Module patching is discouraged or the check is at Module ID level.
-      // "If the user selects a Destination and it matches the Source"
-      // Let's show a warning if Module IDs match.
+
+    // Check for risky connections
+    const isOscSource = sourceId.startsWith('osc-');
+    const isAmpOrSpeakerDest = selectedDestId === 'amp' || selectedDestId === 'speaker';
+    const isAudioInput = destInputs.some(d => d.id === selectedDestId && d.input === selectedDestInput); // Ensure it's an audio input, not a param
+
+    const isLfoOrRandomSource = sourceId.startsWith('lfo-') || sourceId === 'random';
+    const isGainParamDest = ['gain', 'level', 'volume'].includes(selectedDestInput);
+
+    if (isOscSource && isAmpOrSpeakerDest && isAudioInput) {
+      setAlertContent({
+        title: 'Warning',
+        description: 'Connecting the raw tone of an Oscillator directly to the Amp or Speaker can result in extreme volume levels. Either turn down the gain/volume levels before connecting the patch or consider adding a Filter module to reduce some of the Oscillator frequencies.'
+      });
+      setPendingConnection({ sourceId, sourceNode, destId: selectedDestId, destInput: selectedDestInput });
+      setIsAlertOpen(true);
+      return;
     }
 
-    connect(sourceId, sourceNode, selectedDestId, selectedDestInput);
+    if (isLfoOrRandomSource && isGainParamDest) {
+      setAlertContent({
+        title: 'Warning',
+        description: 'Modulation of any Gain/Volume parameter can result in extreme volume levels. Consider turning down the existing levels before connecting the patch.'
+      });
+      setPendingConnection({ sourceId, sourceNode, destId: selectedDestId, destInput: selectedDestInput });
+      setIsAlertOpen(true);
+      return;
+    }
 
-    // Reset selection
+    // Safe connection
+    connect(sourceId, sourceNode, selectedDestId, selectedDestInput);
+    resetSelection();
+  };
+
+  const confirmConnection = () => {
+    if (pendingConnection) {
+      connect(pendingConnection.sourceId, pendingConnection.sourceNode, pendingConnection.destId, pendingConnection.destInput);
+      setPendingConnection(null);
+    }
+    setIsAlertOpen(false);
+    resetSelection();
+  };
+
+  const cancelConnection = () => {
+    setPendingConnection(null);
+    setIsAlertOpen(false);
+  };
+
+  const resetSelection = () => {
     setSelectedSourceId('');
     setSelectedDestId('');
     setSelectedDestInput('');
@@ -76,7 +130,7 @@ export const PatchBay: React.FC = () => {
     <Card className="w-full max-w-4xl bg-zinc-900 border-zinc-800 shadow-lg">
       <CardHeader className="border-b border-zinc-800 pb-4">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-zinc-100">Patch Bay</CardTitle>
+          <CardTitle className="text-xl  text-zinc-100">Patch Bay</CardTitle>
           <div className="flex gap-2">
             <Button
               variant="default"
@@ -94,7 +148,7 @@ export const PatchBay: React.FC = () => {
               className="text-xs border-zinc-800 text-zinc-400"
             >
               <RefreshCw className="w-3 h-3 mr-1" />
-              Restore Defaults
+              Load Default Patch
             </Button>
           </div>
         </div>
@@ -112,7 +166,7 @@ export const PatchBay: React.FC = () => {
               <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-60">
+              <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-100">
                 {sourceOptions.map(opt => (
                   <SelectItem key={`${opt.id}:${opt.node}`} value={`${opt.id}:${opt.node}`}>
                     {opt.label}
@@ -135,12 +189,27 @@ export const PatchBay: React.FC = () => {
               <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-60">
-                {destOptions.map(opt => (
-                  <SelectItem key={`${opt.id}:${opt.input}`} value={`${opt.id}:${opt.input}`}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
+              <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-100">
+                {destInputs.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Module</SelectLabel>
+                    {destInputs.map(opt => (
+                      <SelectItem key={`${opt.id}:${opt.input}`} value={`${opt.id}:${opt.input}`}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+                {destParams.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Parameter</SelectLabel>
+                    {destParams.map(opt => (
+                      <SelectItem key={`${opt.id}:${opt.input}`} value={`${opt.id}:${opt.input}`}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -162,7 +231,7 @@ export const PatchBay: React.FC = () => {
 
         {/* Active Connections List */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Active Connections</h3>
+          <h3 className="text-sm font-medium text-zinc-300">Active Connections</h3>
           {connections.length === 0 ? (
             <div className="text-zinc-500 text-sm italic py-4 text-center border border-dashed border-zinc-800 rounded">
               No active patches. Connect modules above.
@@ -195,6 +264,22 @@ export const PatchBay: React.FC = () => {
         </div>
 
       </CardContent>
+
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-zinc-100">{alertContent.title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              {alertContent.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelConnection} className="bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border-zinc-700">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmConnection} className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200">Add Patch</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </Card>
   );
 };
