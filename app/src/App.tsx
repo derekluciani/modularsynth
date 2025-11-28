@@ -19,7 +19,7 @@ const Synth = () => {
         <LFO id="lfo-1" name="LFO 1" />
         <LFO id="lfo-2" name="LFO 2" />
         <LFO id="lfo-3" name="LFO 3" />
-        <Random id="random-1" name="Random" />
+        <Random id="random" name="Random" />
       </div>
       {/* Row: Oscillators */}
       <div className="flex flex-wrap justify-center gap-4">
@@ -55,7 +55,7 @@ function App() {
       <div className="min-h-screen bg-zinc-950 text-zinc-50 p-8">
         <div className="flex justify-center items-baseline gap-4 mb-12">
           <h1 className="text-3xl font-bold tracking-tight">Modular Synthesizer</h1>
-          <h1 className="text-md font-serif text-zinc-500">v2.4</h1>
+          <h1 className="text-md font-serif text-zinc-500">v2.5</h1>
           <div className="ml-auto">
             <PresetManager />
           </div>

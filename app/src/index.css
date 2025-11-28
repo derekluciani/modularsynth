@@ -130,7 +130,7 @@
     box-shadow: 0 0 6px rgba(255, 255, 255, 1);
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.1;
     box-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
   }
 }

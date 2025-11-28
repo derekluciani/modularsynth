@@ -4,6 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from './ui/select';
 import { Button } from './ui/button';
 import { Trash2, RefreshCw } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 export const PatchBay: React.FC = () => {
   const { modules, connections, connect, disconnect, resetConnections, restoreDefaultPatch } = useAudioContext();
@@ -11,6 +21,16 @@ export const PatchBay: React.FC = () => {
   const [selectedSourceId, setSelectedSourceId] = useState<string>('');
   const [selectedDestId, setSelectedDestId] = useState<string>('');
   const [selectedDestInput, setSelectedDestInput] = useState<string>('');
+
+  // Alert Dialog State
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertContent, setAlertContent] = useState({ title: '', description: '' });
+  const [pendingConnection, setPendingConnection] = useState<{
+    sourceId: string;
+    sourceNode: string;
+    destId: string;
+    destInput: string;
+  } | null>(null);
 
   // Filtering sources: Only audio nodes (Osc, LFO, etc.) can be sources.
   // Actually, useAudioModule outputs define valid sources.
@@ -50,28 +70,55 @@ export const PatchBay: React.FC = () => {
     if (!selectedSourceId || !selectedDestId || !selectedDestInput) return;
 
     const [sourceId, sourceNode] = selectedSourceId.split(':');
-    // Check self-patching
-    if (sourceId === selectedDestId) {
-      // Requirement: "Source and destination cannot be the same" (module level check)
-      // But wait, can Osc1 Output connect to Osc1 Pitch? Yes, FM.
-      // Requirement says: "Paired Source and Destination values cannot be the same (eg. Osc 1 -> Osc 1)."
-      // If the user selects a Destination and it matches the Source, display validation message.
-      // Let's strictly follow requirement: "Paired Source and Destination values cannot be the same".
-      // This implies Module Level identity or exact dropdown value identity?
-      // Example: "Osc 1 -> Osc 1" implies source module == dest module.
-      // Usually FM feedback is allowed. But let's adhere to the specific text "Source and destination cannot be the same".
-      // It likely refers to the exact selection strings if they were simple.
-      // But here we have complex paths.
-      // "Source and destination cannot be the same" usually prevents infinite loops or null ops.
-      // Let's allow self-patching (FM) unless it strictly creates a feedback loop on the same node?
-      // Actually, the requirement text "eg. Osc 1 -> Osc 1" strongly suggests Module-to-same-Module patching is discouraged or the check is at Module ID level.
-      // "If the user selects a Destination and it matches the Source"
-      // Let's show a warning if Module IDs match.
+
+    // Check for risky connections
+    const isOscSource = sourceId.startsWith('osc-');
+    const isAmpOrSpeakerDest = selectedDestId === 'amp' || selectedDestId === 'speaker';
+    const isAudioInput = destInputs.some(d => d.id === selectedDestId && d.input === selectedDestInput); // Ensure it's an audio input, not a param
+
+    const isLfoOrRandomSource = sourceId.startsWith('lfo-') || sourceId === 'random';
+    const isGainParamDest = ['gain', 'level', 'volume'].includes(selectedDestInput);
+
+    if (isOscSource && isAmpOrSpeakerDest && isAudioInput) {
+      setAlertContent({
+        title: 'Warning',
+        description: 'Connecting the raw tone of an Oscillator directly to the Amp or Speaker can result in extreme volume levels. Either turn down the gain/volume levels before connecting the patch or consider adding a Filter module to reduce some of the Oscillator frequencies.'
+      });
+      setPendingConnection({ sourceId, sourceNode, destId: selectedDestId, destInput: selectedDestInput });
+      setIsAlertOpen(true);
+      return;
     }
 
-    connect(sourceId, sourceNode, selectedDestId, selectedDestInput);
+    if (isLfoOrRandomSource && isGainParamDest) {
+      setAlertContent({
+        title: 'Warning',
+        description: 'Modulation of any Gain/Volume parameter can result in extreme volume levels. Consider turning down the existing levels before connecting the patch.'
+      });
+      setPendingConnection({ sourceId, sourceNode, destId: selectedDestId, destInput: selectedDestInput });
+      setIsAlertOpen(true);
+      return;
+    }
 
-    // Reset selection
+    // Safe connection
+    connect(sourceId, sourceNode, selectedDestId, selectedDestInput);
+    resetSelection();
+  };
+
+  const confirmConnection = () => {
+    if (pendingConnection) {
+      connect(pendingConnection.sourceId, pendingConnection.sourceNode, pendingConnection.destId, pendingConnection.destInput);
+      setPendingConnection(null);
+    }
+    setIsAlertOpen(false);
+    resetSelection();
+  };
+
+  const cancelConnection = () => {
+    setPendingConnection(null);
+    setIsAlertOpen(false);
+  };
+
+  const resetSelection = () => {
     setSelectedSourceId('');
     setSelectedDestId('');
     setSelectedDestInput('');
@@ -217,6 +264,22 @@ export const PatchBay: React.FC = () => {
         </div>
 
       </CardContent>
+
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-zinc-100">{alertContent.title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              {alertContent.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelConnection} className="bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border-zinc-700">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmConnection} className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200">Add Patch</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </Card>
   );
 };
