@@ -114,7 +114,12 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
       <CardHeader className="pb-3">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>{name}</span>
-          {/* <div className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]" /> */}
+          <div
+            className="w-[4px] h-[4px] rounded-full bg-zinc-200"
+            style={{
+              animation: `pulse-led ${freq > 0 ? 1 / freq : 0}s infinite ease-in-out`
+            }}
+          />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
