@@ -11,8 +11,8 @@ export const DEFAULT_PATCH = {
             "isMuted": false
         },
         "filter-2": {
-            "cutoff": 20,
-            "res": 0.1,
+            "cutoff": 0,
+            "res": 0,
             "type": "lowpass"
         },
         "distort": {
@@ -59,21 +59,21 @@ export const DEFAULT_PATCH = {
             "level": 0
         },
         "osc-1": {
-            "freq": 110.42746817631536,
+            "freq": 110,
             "type": "sawtooth",
             "level": 0.2
         },
         "filter-1": {
-            "cutoff": 1011.6493240062277,
-            "res": 0.9968894917736366,
+            "cutoff": 1011,
+            "res": 1.0,
             "type": "lowpass"
         }
     },
     "connections": [
         {
-            "sourceId": "amp",
+            "sourceId": "osc-1",
             "sourceNode": "output",
-            "destId": "speaker",
+            "destId": "filter-1",
             "destInput": "input"
         },
         {
@@ -83,10 +83,10 @@ export const DEFAULT_PATCH = {
             "destInput": "input"
         },
         {
-            "sourceId": "osc-1",
+            "sourceId": "amp",
             "sourceNode": "output",
-            "destId": "filter-1",
+            "destId": "speaker",
             "destInput": "input"
-        }
+        },
     ]
 };
