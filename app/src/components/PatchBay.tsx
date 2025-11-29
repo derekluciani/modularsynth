@@ -135,21 +135,21 @@ export const PatchBay: React.FC = () => {
             <Button
               variant="default"
               size="sm"
-              onClick={resetConnections}
-              className="text-xs border-zinc-800 text-zinc-400"
-            >
-              <Trash2 className="w-3 h-3 mr-1" />
-              Clear All
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
               onClick={restoreDefaultPatch}
               className="text-xs border-zinc-800 text-zinc-400"
             >
               <RefreshCw className="w-3 h-3 mr-1" />
               Load Default Patch
             </Button>
+            {/* <Button
+              variant="default"
+              size="sm"
+              onClick={resetConnections}
+              className="text-xs border-zinc-800 text-zinc-400"
+            >
+              <Trash2 className="w-3 h-3 mr-1" />
+              Clear All
+            </Button> */}
           </div>
         </div>
       </CardHeader>
@@ -157,13 +157,13 @@ export const PatchBay: React.FC = () => {
 
         {/* New Connection Controls */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end bg-zinc-950/50 p-4 rounded-lg border border-zinc-800">
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-zinc-400">Source</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-medium text-zinc-400 mb-2">Source</label>
             <Select
               value={selectedSourceId}
               onValueChange={(val) => setSelectedSourceId(val)}
             >
-              <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200">
+              <SelectTrigger className="w-full bg-zinc-900 border-zinc-700 text-zinc-200">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-100">
@@ -176,8 +176,8 @@ export const PatchBay: React.FC = () => {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-zinc-400">Destination</label>
+          <div className="flex flex-col">
+            <label className="text-xs font-medium text-zinc-400 mb-2">Destination</label>
             <Select
               value={selectedDestId ? `${selectedDestId}:${selectedDestInput}` : ''}
               onValueChange={(val) => {
@@ -186,7 +186,7 @@ export const PatchBay: React.FC = () => {
                 setSelectedDestInput(inputName);
               }}
             >
-              <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200">
+              <SelectTrigger className="w-full bg-zinc-900 border-zinc-700 text-zinc-200">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-100">
@@ -219,7 +219,7 @@ export const PatchBay: React.FC = () => {
             disabled={!selectedSourceId || !selectedDestId || (isSelfPatch as boolean)}
             className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
           >
-            Patch
+            Add Patch
           </Button>
         </div>
 

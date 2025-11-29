@@ -51,15 +51,15 @@ function App() {
   return (
     <AudioContextProvider>
       <div className="min-h-screen bg-zinc-950 text-zinc-50 p-8">
-        <div className="flex justify-center items-baseline gap-4 mb-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-center items-baseline gap-4 mb-12">
           <h1 className="text-3xl font-bold tracking-tight">Modular Synthesizer</h1>
           <h1 className="text-md font-serif text-zinc-500">v2.5</h1>
           <div className="ml-auto">
             <PresetManager />
           </div>
         </div>
-        <div className="max-w-6xl mx-auto">
-          <Synth />
+        <Synth />
         </div>
         <footer className="font-serif font-light text-center tracking-wide text-zinc-800 text-sm mt-9">
           created by <a href="https://github.com/derekluciani/modularsynth" target="_blank" rel="noopener noreferrer" className="underline text-zinc-800 hover:text-zinc-700">derekluciani</a> and agentic LLMs

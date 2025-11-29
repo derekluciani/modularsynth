@@ -160,76 +160,76 @@ export const PresetManager: React.FC = () => {
     };
 
     return (
-        <div className="flex gap-2 items-center">
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300">
-                        <FolderOpen className="w-4 h-4" />
-                        Load
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-zinc-950 border-zinc-800 text-zinc-100 w-56">
-                    {presets.length === 0 ? (
-                        <div className="p-2 text-sm text-zinc-500">No saved patches</div>
-                    ) : (
-                        <>
-                            {presets.map((preset, i) => (
-                                <DropdownMenuItem
-                                    key={i}
-                                    onClick={() => {
-                                        resumeContext();
-                                        loadPatch(preset);
-                                    }}
-                                    className="focus:bg-zinc-900 focus:text-zinc-100 cursor-pointer"
-                                >
-                                    {preset.name}
-                                </DropdownMenuItem>
-                            ))}
-                            <DropdownMenuSeparator className="bg-zinc-800" />
-                            <DropdownMenuItem
-                                onClick={clearPresets}
-                                className="focus:bg-red-900/30 focus:text-red-400 text-red-400 cursor-pointer gap-2"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                                Clear All
-                            </DropdownMenuItem>
-                        </>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
+        // <div className="flex gap-2 items-center">
+        //     <DropdownMenu>
+        //         <DropdownMenuTrigger asChild>
+        //             <Button variant="outline" size="sm" className="gap-2 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300">
+        //                 <FolderOpen className="w-4 h-4" />
+        //                 Load
+        //             </Button>
+        //         </DropdownMenuTrigger>
+        //         <DropdownMenuContent className="bg-zinc-950 border-zinc-800 text-zinc-100 w-56">
+        //             {presets.length === 0 ? (
+        //                 <div className="p-2 text-sm text-zinc-500">No saved patches</div>
+        //             ) : (
+        //                 <>
+        //                     {presets.map((preset, i) => (
+        //                         <DropdownMenuItem
+        //                             key={i}
+        //                             onClick={() => {
+        //                                 resumeContext();
+        //                                 loadPatch(preset);
+        //                             }}
+        //                             className="focus:bg-zinc-900 focus:text-zinc-100 cursor-pointer"
+        //                         >
+        //                             {preset.name}
+        //                         </DropdownMenuItem>
+        //                     ))}
+        //                     <DropdownMenuSeparator className="bg-zinc-800" />
+        //                     <DropdownMenuItem
+        //                         onClick={clearPresets}
+        //                         className="focus:bg-red-900/30 focus:text-red-400 text-red-400 cursor-pointer gap-2"
+        //                     >
+        //                         <Trash2 className="w-4 h-4" />
+        //                         Clear All
+        //                     </DropdownMenuItem>
+        //                 </>
+        //             )}
+        //         </DropdownMenuContent>
+        //     </DropdownMenu>
 
-            <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
-                <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300">
-                        <Save className="w-4 h-4" />
-                        Save
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
-                    <DialogHeader>
-                        <DialogTitle>Save Patch</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <Label htmlFor="name" className="mb-2 block">Patch Name</Label>
-                        <Input
-                            id="name"
-                            value={newPresetName}
-                            onChange={(e) => setNewPresetName(e.target.value)}
-                            className="bg-zinc-900 border-zinc-800 text-zinc-100"
-                            placeholder="My Cool Patch"
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button onClick={savePatch} className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200">Save</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+        //     <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+        //         <DialogTrigger asChild>
+        //             <Button variant="outline" size="sm" className="gap-2 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300">
+        //                 <Save className="w-4 h-4" />
+        //                 Save
+        //             </Button>
+        //         </DialogTrigger>
+        //         <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+        //             <DialogHeader>
+        //                 <DialogTitle>Save Patch</DialogTitle>
+        //             </DialogHeader>
+        //             <div className="py-4">
+        //                 <Label htmlFor="name" className="mb-2 block">Patch Name</Label>
+        //                 <Input
+        //                     id="name"
+        //                     value={newPresetName}
+        //                     onChange={(e) => setNewPresetName(e.target.value)}
+        //                     className="bg-zinc-900 border-zinc-800 text-zinc-100"
+        //                     placeholder="My Cool Patch"
+        //                 />
+        //             </div>
+        //             <DialogFooter>
+        //                 <Button onClick={savePatch} className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200">Save</Button>
+        //             </DialogFooter>
+        //         </DialogContent>
+        //     </Dialog>
 
-            <div className="h-6 w-px bg-zinc-800 mx-2" />
-
+        //     <div className="h-6 w-px bg-zinc-800 mx-2" />
+        <div className="flex gap-3 items-center">
             <Button variant="outline" size="sm" onClick={exportPatch} className="gap-2 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300">
                 <Upload className="w-4 h-4" />
-                Export
+                Export Patch
             </Button>
 
             <div className="relative">
@@ -241,7 +241,7 @@ export const PresetManager: React.FC = () => {
                 />
                 <Button variant="outline" size="sm" className="gap-2 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300 pointer-events-none">
                     <Download className="w-4 h-4" />
-                    Import
+                    Import Patch
                 </Button>
             </div>
         </div>
