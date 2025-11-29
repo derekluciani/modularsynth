@@ -3,7 +3,7 @@ import { useAudioContext } from '../context/AudioContextProvider';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from './ui/select';
 import { Button } from './ui/button';
-import { Trash2, RefreshCw } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +16,7 @@ import {
 } from "./ui/alert-dialog";
 
 export const PatchBay: React.FC = () => {
-  const { modules, connections, connect, disconnect, resetConnections, restoreDefaultPatch } = useAudioContext();
+  const { modules, connections, connect, disconnect } = useAudioContext();
 
   const [selectedSourceId, setSelectedSourceId] = useState<string>('');
   const [selectedDestId, setSelectedDestId] = useState<string>('');
@@ -214,7 +214,7 @@ export const PatchBay: React.FC = () => {
           <h3 className="text-sm font-medium text-zinc-300">Active Connections</h3>
           {connections.length === 0 ? (
             <div className="text-zinc-500 text-sm italic py-4 text-center border border-dashed border-zinc-800 rounded">
-              No active patches
+              No active patches. Connect modules together or 'Load' a patch.
             </div>
           ) : (
             <div className="grid gap-2">
