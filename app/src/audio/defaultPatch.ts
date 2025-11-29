@@ -1,4 +1,6 @@
-export const DEFAULT_PATCH = {
+import type { Patch } from './types';
+
+export const DEFAULT_PATCH: Patch = {
     "name": "Basic Patch",
     "patchID": 1764165557952,
     "modules": {
@@ -70,6 +72,6 @@ export const DEFAULT_PATCH = {
         }
     },
     "connections": [
-        
+
     ]
 };

@@ -27,6 +27,20 @@ export interface Connection {
   isParam: boolean; // true if destination is an AudioParam
 }
 
+export interface SerializedConnection {
+  sourceId: string;
+  destId: string;
+  sourceNode: string;
+  destInput: string;
+}
+
+export interface Patch {
+  name: string;
+  patchID: number;
+  modules: Record<string, any>;
+  connections: SerializedConnection[];
+}
+
 export interface AudioContextType {
   audioCtx: AudioContext | null;
   analyserNode: AnalyserNode | null;

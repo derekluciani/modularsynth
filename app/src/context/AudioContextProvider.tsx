@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import type { AudioContextType, AudioModuleRegistryItem, Connection } from '../audio/types';
+import type { AudioContextType, AudioModuleRegistryItem, Connection, Patch } from '../audio/types';
 import { makeConnection, breakConnection } from '../audio/patching';
 import { DEFAULT_PATCH } from '../audio/defaultPatch';
 
@@ -138,7 +138,7 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     });
   }, [modules]);
 
-  const loadPatch = useCallback((patch: typeof DEFAULT_PATCH) => {
+  const loadPatch = useCallback((patch: Patch) => {
     // 1. Reset connections
     setConnections(prev => {
       prev.forEach(c => {
