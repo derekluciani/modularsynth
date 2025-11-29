@@ -128,32 +128,12 @@ export const PatchBay: React.FC = () => {
 
   return (
     <Card className="grow max-w-2xl bg-zinc-900 border-zinc-800 shadow-lg">
-      <CardHeader className="border-b border-zinc-800 pb-4">
+      <CardHeader className="border-b border-zinc-800 pb-4 gap-0">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl  text-zinc-100">Patch Bay</CardTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={restoreDefaultPatch}
-              className="text-xs border-zinc-800 text-zinc-400"
-            >
-              <RefreshCw className="w-3 h-3 mr-1" />
-              Load Default Patch
-            </Button>
-            {/* <Button
-              variant="default"
-              size="sm"
-              onClick={resetConnections}
-              className="text-xs border-zinc-800 text-zinc-400"
-            >
-              <Trash2 className="w-3 h-3 mr-1" />
-              Clear All
-            </Button> */}
-          </div>
+          <CardTitle className="text-lg text-zinc-100">Patch Bay</CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="pt-6 space-y-6">
+      <CardContent className="space-y-6">
 
         {/* New Connection Controls */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end bg-zinc-950/50 p-4 rounded-lg border border-zinc-800">
@@ -234,7 +214,7 @@ export const PatchBay: React.FC = () => {
           <h3 className="text-sm font-medium text-zinc-300">Active Connections</h3>
           {connections.length === 0 ? (
             <div className="text-zinc-500 text-sm italic py-4 text-center border border-dashed border-zinc-800 rounded">
-              No active patches. Connect modules above.
+              No active patches
             </div>
           ) : (
             <div className="grid gap-2">

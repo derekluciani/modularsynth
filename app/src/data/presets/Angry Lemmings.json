@@ -1,0 +1,128 @@
+{
+  "name": "Angry Lemmings",
+  "patchID": 1764170699213,
+  "modules": {
+    "osc-4": {
+      "freq": 20,
+      "type": "sawtooth",
+      "level": 0
+    },
+    "filter-2": {
+      "cutoff": 20,
+      "res": 0.1,
+      "type": "lowpass"
+    },
+    "distort": {
+      "drive": 0,
+      "amount": 0,
+      "oversample": "4x"
+    },
+    "amp": {
+      "gain": 0.5
+    },
+    "osc-1": {
+      "freq": 174.2213680178898,
+      "type": "triangle",
+      "level": 0.5
+    },
+    "osc-2": {
+      "freq": 174.2213680178898,
+      "type": "triangle",
+      "level": 0.51
+    },
+    "lfo-2": {
+      "freq": 0.2447974519513009,
+      "amount": 159,
+      "type": "sawtooth"
+    },
+    "lfo-1": {
+      "freq": 0.480807738249601,
+      "amount": 159,
+      "type": "sawtooth"
+    },
+    "osc-3": {
+      "freq": 174.2213680178898,
+      "type": "triangle",
+      "level": 0.22
+    },
+    "lfo-3": {
+      "freq": 0.12344797628583873,
+      "amount": 330,
+      "type": "sawtooth"
+    },
+    "speaker": {
+      "volume": -6,
+      "pan": 0,
+      "isMuted": false
+    },
+    "delay": {
+      "time": 0.023097381056170048,
+      "feedback": 0.001
+    },
+    "random": {
+      "rate": 0.1,
+      "level": 0
+    },
+    "filter-1": {
+      "cutoff": 3707.063246829623,
+      "res": 5.3182958969449885,
+      "type": "lowpass"
+    }
+  },
+  "connections": [
+    {
+      "sourceId": "amp",
+      "sourceNode": "output",
+      "destId": "speaker",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "osc-1",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-1",
+      "sourceNode": "output",
+      "destId": "osc-1",
+      "destInput": "pitch"
+    },
+    {
+      "sourceId": "osc-2",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-2",
+      "sourceNode": "output",
+      "destId": "osc-2",
+      "destInput": "pitch"
+    },
+    {
+      "sourceId": "osc-3",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-3",
+      "sourceNode": "output",
+      "destId": "osc-3",
+      "destInput": "pitch"
+    },
+    {
+      "sourceId": "filter-1",
+      "sourceNode": "output",
+      "destId": "delay",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "delay",
+      "sourceNode": "output",
+      "destId": "amp",
+      "destInput": "input"
+    }
+  ]
+}

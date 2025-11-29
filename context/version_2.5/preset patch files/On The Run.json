@@ -1,0 +1,128 @@
+{
+  "name": "On The Run",
+  "patchID": 1764380658567,
+  "modules": {
+    "osc-1": {
+      "freq": 112.09994222871812,
+      "type": "sawtooth",
+      "level": 0.4
+    },
+    "osc-2": {
+      "freq": 741.296233415875,
+      "type": "square",
+      "level": 0.11
+    },
+    "osc-3": {
+      "freq": 20,
+      "type": "sawtooth",
+      "level": 0
+    },
+    "osc-4": {
+      "freq": 20,
+      "type": "sawtooth",
+      "level": 0
+    },
+    "filter-1": {
+      "cutoff": 2831.5875599141627,
+      "res": 1.0021853458494043,
+      "type": "lowpass"
+    },
+    "filter-2": {
+      "cutoff": 20,
+      "res": 0.1,
+      "type": "lowpass"
+    },
+    "distort": {
+      "drive": 0,
+      "amount": 0,
+      "oversample": "4x"
+    },
+    "delay": {
+      "time": 0.0729266473721711,
+      "feedback": 0.38
+    },
+    "random": {
+      "rate": 0.2751038885847548,
+      "level": 13.995873225726172
+    },
+    "lfo-1": {
+      "freq": 1.5989907133946488,
+      "amount": 211,
+      "type": "square"
+    },
+    "lfo-2": {
+      "freq": 9.047103370891099,
+      "amount": 0.10964781961431853,
+      "type": "square"
+    },
+    "lfo-3": {
+      "freq": 0.130747727668276,
+      "amount": 133.04544179780908,
+      "type": "sine"
+    },
+    "amp": {
+      "gain": 0.7
+    },
+    "speaker": {
+      "volume": -6,
+      "pan": 0,
+      "isMuted": false
+    }
+  },
+  "connections": [
+    {
+      "sourceId": "amp",
+      "sourceNode": "output",
+      "destId": "speaker",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "osc-1",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "filter-1",
+      "sourceNode": "output",
+      "destId": "delay",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "delay",
+      "sourceNode": "output",
+      "destId": "amp",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-1",
+      "sourceNode": "output",
+      "destId": "osc-1",
+      "destInput": "pitch"
+    },
+    {
+      "sourceId": "random",
+      "sourceNode": "output",
+      "destId": "osc-1",
+      "destInput": "pitch"
+    },
+    {
+      "sourceId": "osc-2",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-2",
+      "sourceNode": "output",
+      "destId": "osc-2",
+      "destInput": "level"
+    },
+    {
+      "sourceId": "lfo-3",
+      "sourceNode": "output",
+      "destId": "osc-2",
+      "destInput": "pitch"
+    }
+  ]
+}

@@ -25,7 +25,7 @@ export const DEFAULT_PATCH = {
             "feedback": 0.001
         },
         "osc-4": {
-            "freq": 20,
+            "freq": 0,
             "type": "sawtooth",
             "level": 0
         },
@@ -49,44 +49,27 @@ export const DEFAULT_PATCH = {
             "type": "sine"
         },
         "osc-3": {
-            "freq": 20,
+            "freq": 0,
             "type": "sawtooth",
             "level": 0
         },
         "osc-2": {
-            "freq": 20,
+            "freq": 0,
             "type": "sawtooth",
             "level": 0
         },
         "osc-1": {
-            "freq": 110,
+            "freq": 0,
             "type": "sawtooth",
-            "level": 0.2
+            "level": 0
         },
         "filter-1": {
-            "cutoff": 1011,
-            "res": 1.0,
+            "cutoff": 0,
+            "res": 0,
             "type": "lowpass"
         }
     },
     "connections": [
-        {
-            "sourceId": "osc-1",
-            "sourceNode": "output",
-            "destId": "filter-1",
-            "destInput": "input"
-        },
-        {
-            "sourceId": "filter-1",
-            "sourceNode": "output",
-            "destId": "amp",
-            "destInput": "input"
-        },
-        {
-            "sourceId": "amp",
-            "sourceNode": "output",
-            "destId": "speaker",
-            "destInput": "input"
-        },
+        
     ]
 };
