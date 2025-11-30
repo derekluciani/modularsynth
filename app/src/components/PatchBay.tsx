@@ -127,11 +127,9 @@ export const PatchBay: React.FC = () => {
   const isSelfPatch = selectedSourceId && selectedDestId && selectedSourceId.split(':')[0] === selectedDestId;
 
   return (
-    <Card className="grow max-w-2xl bg-zinc-900 border-zinc-800 shadow-lg">
-      <CardHeader className="border-b border-zinc-800 pb-4 gap-0">
-        <div className="flex justify-between items-center">
+    <Card className="grow max-w-2xl bg-zinc-900 border-zinc-800 shadow-lg gap-1">
+      <CardHeader className="border-zinc-800 pb-4 gap-0">
           <CardTitle className="text-lg text-zinc-100">Patch Bay</CardTitle>
-        </div>
       </CardHeader>
       <CardContent className="space-y-6">
 
@@ -213,8 +211,8 @@ export const PatchBay: React.FC = () => {
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-zinc-300">Active Connections</h3>
           {connections.length === 0 ? (
-            <div className="text-zinc-500 text-sm italic py-4 text-center border border-dashed border-zinc-800 rounded">
-              No active patches. Connect modules together or 'Load' a patch.
+            <div className="text-zinc-600 text-sm italic py-4 text-center border border-dashed border-zinc-800 rounded">
+              No active patches. Connect modules or 'Load' a patch.
             </div>
           ) : (
             <div className="grid gap-2">

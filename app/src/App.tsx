@@ -61,8 +61,8 @@ function App() {
         </div>
         <Synth />
         </div>
-        <footer className="font-serif font-light text-center tracking-wide text-zinc-800 text-sm mt-9">
-          created by <a href="https://github.com/derekluciani/modularsynth" target="_blank" rel="noopener noreferrer" className="underline text-zinc-800 hover:text-zinc-700">derekluciani</a> and agentic LLMs
+        <footer className="font-light text-center text-zinc-800 text-sm mt-9">
+          Created by <a href="https://github.com/derekluciani/modularsynth" target="_blank" rel="noopener noreferrer" className="underline text-zinc-800 hover:text-zinc-700">derekluciani</a> with agentic LLMs
         </footer>
       </div>
     </AudioContextProvider>

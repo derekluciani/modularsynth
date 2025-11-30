@@ -128,8 +128,8 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   useAudioModule(id, moduleDef);
 
   return (
-    <Card className="grow shadow-lg shadow-black/50">
-      <CardHeader className="pb-3 border-b border-zinc-800 bg-zinc-950/50">
+    <Card className="grow shadow-lg shadow-black/50 gap-0">
+      <CardHeader className="border-zinc-800 bg-zinc-950/50">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>Speaker</span>
           <Button
