@@ -6,7 +6,7 @@ import onTheRun from './On The Run.json';
 
 export const defaultPresets = [
     basicPatch,
-    drive,
     angryLemmings,
+    drive,
     onTheRun
 ];
