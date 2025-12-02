@@ -137,7 +137,7 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
             max={5}
             step={0.01}
             onValueChange={(v) => setDrive(v[0])}
-            className="[&_.absolute]:bg-orange-500"
+            className="[&_.absolute]:bg-dist"
           />
         </div>
 
@@ -153,7 +153,7 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
             max={100}
             step={1}
             onValueChange={(v) => setAmount(v[0])}
-            className="[&_.absolute]:bg-orange-500"
+            className="[&_.absolute]:bg-dist"
           />
         </div>
 

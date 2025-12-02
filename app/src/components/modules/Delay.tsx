@@ -137,7 +137,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setTime(linearToLog(v[0], 0.01, 2.0))}
-            className="[&_.absolute]:bg-blue-500"
+            className="[&_.absolute]:bg-delay"
           />
         </div>
 
@@ -152,7 +152,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             max={0.9}
             step={0.01}
             onValueChange={(v) => setFeedback(v[0])}
-            className="[&_.absolute]:bg-blue-500"
+            className="[&_.absolute]:bg-delay"
           />
         </div>
       </CardContent>

@@ -116,7 +116,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setRate(linearToLog(v[0], 0.1, 20))}
-            className="[&_.absolute]:bg-stone-500"
+            className="[&_.absolute]:bg-rand"
           />
         </div>
 
@@ -131,7 +131,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setLevel(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))}
-            className="[&_.absolute]:bg-stone-500"
+            className="[&_.absolute]:bg-rand"
           />
         </div>
       </CardContent>

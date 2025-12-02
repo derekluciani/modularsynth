@@ -85,7 +85,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
             max={1}
             step={0.01}
             onValueChange={(v) => setGain(v[0])}
-            className="[&_.absolute]:bg-zinc-500"
+            className="[&_.absolute]:bg-amp"
           />
         </div>
       </CardContent>

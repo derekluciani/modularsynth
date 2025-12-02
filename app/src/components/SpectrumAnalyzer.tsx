@@ -36,7 +36,6 @@ export const SpectrumAnalyzer: React.FC = () => {
                 barHeight = (dataArray[i] / 255) * height;
 
                 // Gradient or solid color
-                // Let's use the emerald color to match the theme
                 // ctx.fillStyle = `hsl(${i / bufferLength * 360}, 100%, 50%)`;
                 ctx.fillStyle = 'rgb(24, 24, 27)'; // zinc-800
 
@@ -60,7 +59,7 @@ export const SpectrumAnalyzer: React.FC = () => {
                     ref={canvasRef}
                     width={800}
                     height={150}
-                    className="w-full h-[150px] rounded-lg bg-zinc-950"
+                    className="w-full h-[150px] rounded-lg"
                 />
             </CardAnalyzerContent>
         </CardAnalyzer>

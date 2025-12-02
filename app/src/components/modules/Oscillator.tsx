@@ -129,7 +129,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setFreq(linearToLog(v[0], 20, 3000))}
-            className="[&_.absolute]:bg-emerald-500"
+            className="[&_.absolute]:bg-osc"
           />
         </div>
 
@@ -145,7 +145,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             max={1}
             step={0.01}
             onValueChange={(v) => setLevel(v[0])}
-            className="[&_.absolute]:bg-emerald-500"
+            className="[&_.absolute]:bg-osc"
           />
         </div>
 

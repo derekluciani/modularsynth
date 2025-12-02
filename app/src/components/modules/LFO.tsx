@@ -134,7 +134,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setFreq(linearToLog(v[0], 0.1, 12))}
-            className="[&_.absolute]:bg-cyan-500"
+            className="[&_.absolute]:bg-lfo"
           />
         </div>
 
@@ -149,7 +149,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setAmount(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))}
-            className="[&_.absolute]:bg-cyan-500"
+            className="[&_.absolute]:bg-lfo"
           />
         </div>
 

@@ -7,7 +7,7 @@ function CardAnalyzer({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-analyzer"
       className={cn(
-        "bg-zinc-950 border-zinc-800 flex flex-col gap-6 rounded-lg border shadow-sm",
+        "bg-analyzer border-zinc-800 flex flex-col gap-6 rounded-lg border shadow-sm",
         className
       )}
       {...props}

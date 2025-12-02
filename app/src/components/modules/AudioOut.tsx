@@ -166,7 +166,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             max={0}
             step={0.5}
             onValueChange={(v) => setVolume(v[0])}
-            className="[&_.absolute]:bg-zinc-300"
+            className="[&_.absolute]:bg-speaker"
           />
         </div>
 
@@ -182,7 +182,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             max={1}
             step={0.1}
             onValueChange={(v) => setPan(v[0])}
-            className="[&_.absolute]:bg-zinc-300"
+            className="[&_.absolute]:bg-speaker"
           />
         </div>
       </CardContent>

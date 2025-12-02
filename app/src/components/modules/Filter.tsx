@@ -111,7 +111,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setCutoff(linearToLog(v[0], 20, 20000))}
-            className="[&_.absolute]:bg-purple-500"
+            className="[&_.absolute]:bg-filter"
           />
         </div>
 
@@ -126,7 +126,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setRes(linearToLog(v[0], 0.1, 20))}
-            className="[&_.absolute]:bg-purple-500"
+            className="[&_.absolute]:bg-filter"
           />
         </div>
 
