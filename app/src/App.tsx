@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { AudioContextProvider } from './context/AudioContextProvider';
 import { Oscillator } from './components/modules/Oscillator';
 import { AudioOut } from './components/modules/AudioOut';
@@ -10,6 +11,7 @@ import { Distortion } from './components/modules/Distortion';
 import { PatchBay } from './components/PatchBay';
 import { SpectrumAnalyzer } from './components/SpectrumAnalyzer';
 import { PresetManager } from './components/PresetManager';
+import { ThemeSelector } from './components/ThemeSelector';
 
 const Synth = () => {
   return (
@@ -48,12 +50,21 @@ const Synth = () => {
 };
 
 function App() {
+  const [currentTheme, setCurrentTheme] = useState('stranger-things');
+
+  useEffect(() => {
+    // Remove all known themes
+    document.body.classList.remove('stranger-things', 'minimal');
+    // Add the selected theme
+    document.body.classList.add(currentTheme);
+  }, [currentTheme]);
+
   return (
     <AudioContextProvider>
-      <div className="min-h-screen bg-zinc-950 text-zinc-50 p-8">
+      <div className="min-h-screen p-8 transition-colors duration-300">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-center items-baseline gap-4 mb-12">
-          <h1 className="text-3xl font-bold tracking-tight">Modular Synthesizer</h1>
+          <h1 className="text-zinc-100 text-3xl font-bold tracking-tight">Modular Synthesizer</h1>
           <h1 className="text-md font-serif text-zinc-500">v2.5</h1>
           <div className="ml-auto">
             <PresetManager />
@@ -61,8 +72,11 @@ function App() {
         </div>
         <Synth />
         </div>
-        <footer className="font-light text-center text-zinc-800 text-sm mt-9">
-          Created by <a href="https://github.com/derekluciani/modularsynth" target="_blank" rel="noopener noreferrer" className="underline text-zinc-800 hover:text-zinc-700">derekluciani</a> with agentic LLMs
+        <footer className="font-light text-center text-zinc-800 text-sm mt-9 flex flex-col items-center gap-4">
+          <div>
+            Created by <a href="https://github.com/derekluciani/modularsynth" target="_blank" rel="noopener noreferrer" className="underline text-zinc-800 hover:text-zinc-700">derekluciani</a> with agentic LLMs
+          </div>
+          <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
         </footer>
       </div>
     </AudioContextProvider>

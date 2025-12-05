@@ -25,7 +25,26 @@ export const SpectrumAnalyzer: React.FC = () => {
             const width = canvas.width;
             const height = canvas.height;
 
-            ctx.fillStyle = 'rgb(9, 9, 11)'; // zinc-950
+            // Fetch styles once per frame
+            const styles = getComputedStyle(document.body);
+
+            // Helper to resolve CSS variables recursively
+            const getResolvedColor = (varName: string): string => {
+                let value = styles.getPropertyValue(varName).trim();
+                if (value.startsWith('var(')) {
+                    const match = value.match(/var\(([^)]+)\)/);
+                    if (match && match[1]) {
+                        return styles.getPropertyValue(match[1]).trim();
+                    }
+                }
+                return value;
+            };
+
+            // Use the base variable names defined in CSS (:root or classes)
+            const bgColor = getResolvedColor('--background') || 'rgb(9, 9, 11)';
+            const analyzerColor = getResolvedColor('--analyzer') || 'rgb(24, 24, 27)';
+
+            ctx.fillStyle = bgColor; 
             ctx.fillRect(0, 0, width, height);
 
             const barWidth = (width / bufferLength) * 2.5;
@@ -37,7 +56,7 @@ export const SpectrumAnalyzer: React.FC = () => {
 
                 // Gradient or solid color
                 // ctx.fillStyle = `hsl(${i / bufferLength * 360}, 100%, 50%)`;
-                ctx.fillStyle = 'rgb(24, 24, 27)'; // zinc-800
+                ctx.fillStyle = analyzerColor; 
 
                 ctx.fillRect(x, height - barHeight, barWidth, barHeight);
 
