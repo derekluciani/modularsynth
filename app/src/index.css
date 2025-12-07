@@ -4,167 +4,307 @@
 /* @custom-variant dark (&:is(.minimal *)); */
 
 @theme inline {
-  /* The @directive will generate utility classes for each CSS variable */
-  /* 'Inline' is used when variables need to reference variables' */
-  /* colors */
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  /* base colors */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  /* components */
-  --color-osc: var(--osc);
-  --color-filter: var(--filter);
-  --color-dist: var(--dist);
-  --color-delay: var(--delay);
-  --color-rand: var(--rand);
-  --color-lfo: var(--lfo);
-  --color-amp: var(--amp);
-  --color-speaker: var(--speaker);
-  --color-analyzer: var(--analyzer);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+    /* The @directive will generate utility classes for each CSS variable */
+    /* 'Inline' is used when variables need to reference variables' */
+    /* colors */
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    /* base colors */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    /* components */
+    --color-osc: var(--osc);
+    --color-filter: var(--filter);
+    --color-dist: var(--dist);
+    --color-delay: var(--delay);
+    --color-rand: var(--rand);
+    --color-lfo: var(--lfo);
+    --color-amp: var(--amp);
+    --color-speaker: var(--speaker);
+    --color-analyzer: var(--analyzer);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
 }
 
 :root {
-  /* No @directive is used here, so only CSS variables will exist */
-  /* This is the core/default theme */  
-  /* colors */
-  --primary: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --primary-foreground: oklch(0.985 0 0); /* zinc-50 */
-  --secondary: oklch(0.97 0 0); /* zinc-100 */
-  --secondary-foreground: oklch(0.205 0 0); /* zinc-900 */
-  --muted: oklch(0.97 0 0); /* zinc-100 */
-  --muted-foreground: oklch(0.556 0 0); /* zinc-500 */
-  --accent: oklch(0.97 0 0); /* zinc-100 */
-  --accent-foreground: oklch(0.205 0 0); /* zinc-900 */
-  /* base colors */
-  --background: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  /* components */
-  --osc: oklch(69.6% 0.17 162.48); /* emerald-400 */
-  --filter: oklch(60.6% 0.25 292.717); /* violet-600 */
-  --dist: oklch(75% 0.183 55.934); /* orange-400 */
-  --delay: oklch(62.3% 0.214 259.815); /* blue-500 */
-  --rand: oklch(55.3% 0.013 58.071); /* zinc-500 */
-  --lfo: oklch(71.5% 0.143 215.221); /* cyan-400 */
-  --amp: oklch(55.2% 0.016 285.938); /* zinc-600 */
-  --speaker: oklch(87.1% 0.006 286.286); /* zinc-200 */
-  --analyzer:oklch(27.4% 0.006 286.033); /* zinc-800 */
-  --card: oklch(1 0 0); /* white */
-  --card-foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --popover: oklch(1 0 0); /* white */
-  --popover-foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --destructive: oklch(0.577 0.245 27.325); /* red-600 */
-  --radius: 0.625rem;
-  --border: oklch(0.922 0 0); /* zinc-100 */
-  --input: oklch(0.922 0 0); /* zinc-100 */
-  --ring: oklch(14.1% 0.005 285.823); /* zinc-950 */
+    /* No @directive is used here, so only CSS variables will exist */
+    /* This is the core/default theme */
+    /* colors */
+    --primary: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --primary-foreground: oklch(0.985 0 0);
+    /* zinc-50 */
+    --secondary: oklch(0.97 0 0);
+    /* zinc-100 */
+    --secondary-foreground: oklch(0.205 0 0);
+    /* zinc-900 */
+    --muted: oklch(0.97 0 0);
+    /* zinc-100 */
+    --muted-foreground: oklch(0.556 0 0);
+    /* zinc-500 */
+    --accent: oklch(0.97 0 0);
+    /* zinc-100 */
+    --accent-foreground: oklch(0.205 0 0);
+    /* zinc-900 */
+    /* base colors */
+    --background: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    /* components */
+    --osc: oklch(69.6% 0.17 162.48);
+    /* emerald-400 */
+    --filter: oklch(60.6% 0.25 292.717);
+    /* violet-600 */
+    --dist: oklch(75% 0.183 55.934);
+    /* orange-400 */
+    --delay: oklch(62.3% 0.214 259.815);
+    /* blue-500 */
+    --rand: oklch(55.3% 0.013 58.071);
+    /* zinc-500 */
+    --lfo: oklch(71.5% 0.143 215.221);
+    /* cyan-400 */
+    --amp: oklch(55.2% 0.016 285.938);
+    /* zinc-600 */
+    --speaker: oklch(87.1% 0.006 286.286);
+    /* zinc-200 */
+    --analyzer: oklch(27.4% 0.006 286.033);
+    /* zinc-800 */
+    --card: oklch(1 0 0);
+    /* white */
+    --card-foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --popover: oklch(1 0 0);
+    /* white */
+    --popover-foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --destructive: oklch(0.577 0.245 27.325);
+    /* red-600 */
+    --radius: 0.625rem;
+    --border: oklch(0.922 0 0);
+    /* zinc-100 */
+    --input: oklch(0.922 0 0);
+    /* zinc-100 */
+    --ring: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
 }
 
 .minimal {
-  /* colors */
-  --primary: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --primary-foreground: oklch(0.985 0 0); /* zinc-50 */
-  --secondary: oklch(0.97 0 0); /* zinc-100 */
-  --secondary-foreground: oklch(0.205 0 0); /* zinc-900 */
-  --muted: oklch(0.97 0 0); /* zinc-100 */
-  --muted-foreground: oklch(0.556 0 0); /* zinc-500 */
-  --accent: oklch(0.97 0 0); /* zinc-100 */
-  --accent-foreground: oklch(0.205 0 0); /* zinc-900 */
-  /* base colors */
-  --background: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  /* components */
-  --osc: oklch(69.6% 0.17 162.48); /* emerald-400 */
-  --filter: oklch(60.6% 0.25 292.717); /* violet-600 */
-  --dist: oklch(75% 0.183 55.934); /* orange-400 */
-  --delay: oklch(62.3% 0.214 259.815); /* blue-500 */
-  --rand: oklch(55.3% 0.013 58.071); /* zinc-500 */
-  --lfo: oklch(71.5% 0.143 215.221); /* cyan-400 */
-  --amp: oklch(55.2% 0.016 285.938); /* zinc-600 */
-  --speaker: oklch(87.1% 0.006 286.286); /* zinc-200 */
-  --analyzer: oklch(27.4% 0.006 286.033); /* zinc-800 */
-  --card: oklch(1 0 0); /* white */
-  --card-foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --popover: oklch(1 0 0); /* white */
-  --popover-foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --destructive: oklch(0.577 0.245 27.325); /* red-600 */
-  --radius: 0.625rem;
-  --border: oklch(0.922 0 0); /* zinc-100 */
-  --input: oklch(0.922 0 0); /* zinc-100 */
-  --ring: oklch(14.1% 0.005 285.823); /* zinc-950 */
+    /* colors */
+    --primary: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --primary-foreground: oklch(0.985 0 0);
+    /* zinc-50 */
+    --secondary: oklch(0.97 0 0);
+    /* zinc-100 */
+    --secondary-foreground: oklch(0.205 0 0);
+    /* zinc-900 */
+    --muted: oklch(0.97 0 0);
+    /* zinc-100 */
+    --muted-foreground: oklch(0.556 0 0);
+    /* zinc-500 */
+    --accent: oklch(0.97 0 0);
+    /* zinc-100 */
+    --accent-foreground: oklch(0.205 0 0);
+    /* zinc-900 */
+    /* base colors */
+    --background: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    /* components */
+    --osc: oklch(69.6% 0.17 162.48);
+    /* emerald-400 */
+    --filter: oklch(60.6% 0.25 292.717);
+    /* violet-600 */
+    --dist: oklch(75% 0.183 55.934);
+    /* orange-400 */
+    --delay: oklch(62.3% 0.214 259.815);
+    /* blue-500 */
+    --rand: oklch(55.3% 0.013 58.071);
+    /* zinc-500 */
+    --lfo: oklch(71.5% 0.143 215.221);
+    /* cyan-400 */
+    --amp: oklch(55.2% 0.016 285.938);
+    /* zinc-600 */
+    --speaker: oklch(87.1% 0.006 286.286);
+    /* zinc-200 */
+    --analyzer: oklch(27.4% 0.006 286.033);
+    /* zinc-800 */
+    --card: oklch(1 0 0);
+    /* white */
+    --card-foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --popover: oklch(1 0 0);
+    /* white */
+    --popover-foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --destructive: oklch(0.577 0.245 27.325);
+    /* red-600 */
+    --radius: 0.625rem;
+    --border: oklch(0.922 0 0);
+    /* zinc-100 */
+    --input: oklch(0.922 0 0);
+    /* zinc-100 */
+    --ring: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
 }
 
 .stranger-things {
-  /* colors */
-  --primary: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --primary-foreground: oklch(0.985 0 0); /* zinc-50 */
-  --secondary: oklch(0.97 0 0); /* zinc-100 */
-  --secondary-foreground: oklch(0.205 0 0); /* zinc-900 */
-  --muted: oklch(0.97 0 0); /* zinc-100 */
-  --muted-foreground: oklch(0.556 0 0); /* zinc-500 */
-  --accent: oklch(0.97 0 0); /* zinc-100 */
-  --accent-foreground: oklch(0.205 0 0); /* zinc-900 */
-  /* base colors */
-  --background: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  /* components */
-  --osc: oklch(64.5% 0.246 16.439); /* rose-500 */
-  --filter: oklch(64.5% 0.246 16.439); /* rose-500 */
-  --dist: oklch(64.5% 0.246 16.439); /* rose-500 */
-  --delay: oklch(64.5% 0.246 16.439); /* rose-500 */
-  --rand: oklch(64.5% 0.246 16.439); /* rose-500 */
-  --lfo: oklch(64.5% 0.246 16.439); /* rose-500 */
-  --amp: oklch(64.5% 0.246 16.439); /* rose-500 */
-  --speaker: oklch(64.5% 0.246 16.439); /* rose-500 */
-  --analyzer: oklch(27.1% 0.105 12.094); /* rose-950 */
-  --card: oklch(1 0 0); /* white */
-  --card-foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --popover: oklch(1 0 0); /* white */
-  --popover-foreground: oklch(14.1% 0.005 285.823); /* zinc-950 */
-  --destructive: oklch(27.1% 0.105 12.094); /* rose-950 */
-  --radius: 0.625rem;
-  --border: oklch(0.922 0 0); /* zinc-100 */
-  --input: oklch(0.922 0 0); /* zinc-100 */
-  --ring: oklch(14.1% 0.005 285.823); /* zinc-950 */
+    /* colors */
+    --primary: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --primary-foreground: oklch(0.985 0 0);
+    /* zinc-50 */
+    --secondary: oklch(0.97 0 0);
+    /* zinc-100 */
+    --secondary-foreground: oklch(0.205 0 0);
+    /* zinc-900 */
+    --muted: oklch(0.97 0 0);
+    /* zinc-100 */
+    --muted-foreground: oklch(0.556 0 0);
+    /* zinc-500 */
+    --accent: oklch(0.97 0 0);
+    /* zinc-100 */
+    --accent-foreground: oklch(0.205 0 0);
+    /* zinc-900 */
+    /* base colors */
+    --background: oklch(-0.05 0 0);
+    /* black */
+    --foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    /* components */
+    --osc: oklch(64.5% 0.246 16.439);
+    /* rose-500 */
+    --filter: oklch(64.5% 0.246 16.439);
+    /* rose-500 */
+    --dist: oklch(64.5% 0.246 16.439);
+    /* rose-500 */
+    --delay: oklch(64.5% 0.246 16.439);
+    /* rose-500 */
+    --rand: oklch(64.5% 0.246 16.439);
+    /* rose-500 */
+    --lfo: oklch(64.5% 0.246 16.439);
+    /* rose-500 */
+    --amp: oklch(64.5% 0.246 16.439);
+    /* rose-500 */
+    --speaker: oklch(64.5% 0.246 16.439);
+    /* rose-500 */
+    --analyzer: oklch(27.4% 0.006 286.033);
+    /* rose-950 */
+    --card: oklch(1 0 0);
+    /* white */
+    --card-foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --popover: oklch(1 0 0);
+    /* white */
+    --popover-foreground: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
+    --destructive: oklch(27.1% 0.105 12.094);
+    /* rose-950 */
+    --radius: 0.625rem;
+    --border: oklch(0.922 0 0);
+    /* zinc-100 */
+    --input: oklch(0.922 0 0);
+    /* zinc-100 */
+    --ring: oklch(14.1% 0.005 285.823);
+    /* zinc-950 */
 }
 
 @layer base {
-  /* This applies token utilities universally */
-  * {
-    @apply border-border outline-ring/50;
-  }
-  /* This applies token utilities to the <body> element.
+    /* This applies token utilities universally */
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    /* This applies token utilities to the <body> element.
      It makes your app’s bg and fg use theme tokens*/
-  body {
-    @apply bg-background text-foreground;
-  }
+    body {
+        @apply bg-background text-foreground;
+        position: relative;
+    }
 }
 
 @keyframes pulse-led {
-  0%, 100% {
-    opacity: 1;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 1);
-  }
-  50% {
-    opacity: 0.1;
-    box-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
-  }
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 6px rgba(255, 255, 255, 1);
+    }
+
+    50% {
+        opacity: 0.1;
+        box-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+    }
+}
+
+.stranger-things::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0;
+    background-position: top center;
+    background-repeat: no-repeat;
+    animation: theme-fade-in 2s forwards;
+    pointer-events: none;
+}
+
+/* 1x Density Assets */
+@media (min-width: 1025px) {
+    .stranger-things::before {
+        background-image: url("./assets/stranger-wide.webp");
+    }
+}
+
+@media (max-width: 1024px) {
+    .stranger-things::before {
+        background-image: url("./assets/stranger-narrow.webp");
+    }
+}
+
+/* 2x Density Assets */
+@media (min-width: 1025px) and (-webkit-min-device-pixel-ratio: 2),
+    (min-width: 1025px) and (min-resolution: 144dpi) {
+    .stranger-things::before {
+        background-image: url("./assets/stranger-wide@2x.webp");
+        background-size: 2048px auto;
+    }
+}
+
+@media (max-width: 1024px) and (-webkit-min-device-pixel-ratio: 2),
+    (max-width: 1024px) and (min-resolution: 144dpi) {
+    .stranger-things::before {
+        background-image: url("./assets/stranger-narrow@2x.webp");
+        background-size: 1024px auto;
+    }
+}
+
+@keyframes theme-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }

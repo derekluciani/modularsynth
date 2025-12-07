@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
@@ -12,9 +12,14 @@ interface DelayProps {
   name: string;
 }
 
+interface DelayState {
+  time?: number;
+  feedback?: number;
+}
+
 export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as DelayState) || {};
 
   const [time, setTime] = useState(defaultValues.time ?? 0.3);
   const [feedback, setFeedback] = useState(defaultValues.feedback ?? 0.4);
@@ -110,7 +115,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
       'feedback': nodes.feedbackGain.gain
     },
     getState: () => ({ time: timeRef.current, feedback: feedbackRef.current }),
-    setState: (state: any) => {
+    setState: (state: DelayState) => {
       if (state.time !== undefined) setTime(state.time);
       if (state.feedback !== undefined) setFeedback(state.feedback);
     }

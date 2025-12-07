@@ -54,5 +54,5 @@ export interface AudioContextType {
   resetConnections: () => void;
   restoreDefaultPatch: () => void;
   resumeContext: () => Promise<void>;
-  loadPatch: (patch: any) => void;
+  loadPatch: (patch: Patch) => void;
 }

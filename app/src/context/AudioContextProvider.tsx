@@ -1,26 +1,17 @@
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { AudioContextType, AudioModuleRegistryItem, Connection, Patch } from '../audio/types';
 import { makeConnection, breakConnection } from '../audio/patching';
 import { DEFAULT_PATCH } from '../audio/defaultPatch';
-
-const AudioContextReact = createContext<AudioContextType | null>(null);
-
-export const useAudioContext = () => {
-  const context = useContext(AudioContextReact);
-  if (!context) {
-    throw new Error('useAudioContext must be used within an AudioContextProvider');
-  }
-  return context;
-};
+import { AudioContextReact } from './AudioContext';
 
 interface AudioContextProviderProps {
   children: ReactNode;
 }
 
 export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ children }) => {
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
+  const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
+  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [isWorkletLoaded, setIsWorkletLoaded] = useState(false);
   const [modules, setModules] = useState<Record<string, AudioModuleRegistryItem>>({});
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -28,15 +19,15 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
 
   // Initialize AudioContext on first interaction or mount
   useEffect(() => {
-    if (!audioCtxRef.current) {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioCtxRef.current = ctx;
+    if (!audioCtx) {
+      const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      setAudioCtx(ctx);
 
       // Create global analyser node
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 2048;
       analyser.connect(ctx.destination);
-      analyserRef.current = analyser;
+      setAnalyserNode(analyser);
 
       // Load AudioWorklet
       const loadWorklet = async () => {
@@ -54,13 +45,13 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     return () => {
       // Cleanup if necessary
     };
-  }, []);
+  }, [audioCtx]);
 
   const resumeContext = useCallback(async () => {
-    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-      await audioCtxRef.current.resume();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      await audioCtx.resume();
     }
-  }, []);
+  }, [audioCtx]);
 
   const registerModule = useCallback((id: string, data: AudioModuleRegistryItem) => {
     setModules(prev => ({
@@ -207,8 +198,8 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
   }, [restoreDefaultPatch]);
 
   const value: AudioContextType = useMemo(() => ({
-    audioCtx: audioCtxRef.current,
-    analyserNode: analyserRef.current,
+    audioCtx,
+    analyserNode,
     isWorkletLoaded,
     modules,
     connections,
@@ -220,7 +211,7 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
     restoreDefaultPatch,
     resumeContext,
     loadPatch
-  }), [isWorkletLoaded, modules, connections, registerModule, unregisterModule, connect, disconnect, resetConnections, restoreDefaultPatch, resumeContext, loadPatch]);
+  }), [audioCtx, analyserNode, isWorkletLoaded, modules, connections, registerModule, unregisterModule, connect, disconnect, resetConnections, restoreDefaultPatch, resumeContext, loadPatch]);
 
   return (
     <AudioContextReact.Provider value={value}>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -10,6 +10,12 @@ import { Label } from '../ui/label';
 interface DistortionProps {
   id: string;
   name: string;
+}
+
+interface DistortionState {
+  drive?: number;
+  amount?: number;
+  oversample?: OverSampleType;
 }
 
 function makeDistortionCurve(amount: number) {
@@ -27,7 +33,7 @@ function makeDistortionCurve(amount: number) {
 
 export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as DistortionState) || {};
 
   // Params
   const [drive, setDrive] = useState(defaultValues.drive ?? 0); // Pre-gain (0 to 5)
@@ -108,7 +114,7 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
       'drive': nodes.preGain.gain
     },
     getState: () => ({ drive: driveRef.current, amount: amountRef.current, oversample: oversampleRef.current }),
-    setState: (state: any) => {
+    setState: (state: DistortionState) => {
       if (state.drive !== undefined) setDrive(state.drive);
       if (state.amount !== undefined) setAmount(state.amount);
       if (state.oversample !== undefined) setOversample(state.oversample);

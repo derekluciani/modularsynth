@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
@@ -12,9 +12,14 @@ interface RandomProps {
   name: string;
 }
 
+interface RandomState {
+  rate?: number;
+  level?: number;
+}
+
 export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const { audioCtx, isWorkletLoaded } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as RandomState) || {};
 
   const [rate, setRate] = useState(defaultValues.rate ?? 1);
   const [level, setLevel] = useState(defaultValues.level ?? 0.5);
@@ -84,7 +89,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
       'level': nodes.gain.gain
     },
     getState: () => ({ rate: rateRef.current, level: levelRef.current }),
-    setState: (state: any) => {
+    setState: (state: RandomState) => {
       if (state.rate !== undefined) setRate(state.rate);
       if (state.level !== undefined) setLevel(state.level);
     }

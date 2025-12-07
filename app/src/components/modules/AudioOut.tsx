@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { dbToGain } from '../../audio/scales';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
@@ -13,9 +13,15 @@ interface AudioOutProps {
   id: string;
 }
 
+interface AudioOutState {
+  volume?: number;
+  pan?: number;
+  isMuted?: boolean;
+}
+
 export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   const { audioCtx, analyserNode, resumeContext } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AudioOutState) || {};
 
   const [volume, setVolume] = useState(defaultValues.volume ?? -6); // dB
   const [pan, setPan] = useState(defaultValues.pan ?? 0);
@@ -117,7 +123,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
       'pan': nodes.panner.pan
     },
     getState: () => ({ volume: volumeRef.current, pan: panRef.current, isMuted: isMutedRef.current }),
-    setState: (state: any) => {
+    setState: (state: AudioOutState) => {
       if (state.volume !== undefined) setVolume(state.volume);
       if (state.pan !== undefined) setPan(state.pan);
       if (state.isMuted !== undefined) setIsMuted(state.isMuted);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAudioContext } from '../context/AudioContextProvider';
+import { useAudioContext } from '../context/AudioContext';
 import { defaultPresets } from '../data/presets';
+import type { Patch } from '../audio/types';
 import { Button } from './ui/button';
 import {
     Dialog,
@@ -22,21 +23,11 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Download, Upload, Save, FolderOpen, Trash2 } from 'lucide-react';
 
-interface PatchData {
-    name: string;
-    patchID: number;
-    modules: Record<string, any>;
-    connections: Array<{
-        sourceId: string;
-        sourceNode: string;
-        destId: string;
-        destInput: string;
-    }>;
-}
+
 
 export const PresetManager: React.FC = () => {
     const { modules, connections, loadPatch, resumeContext } = useAudioContext();
-    const [presets, setPresets] = useState<PatchData[]>([]);
+    const [presets, setPresets] = useState<Patch[]>([]);
     const [newPresetName, setNewPresetName] = useState('');
     const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
 
@@ -70,7 +61,7 @@ export const PresetManager: React.FC = () => {
             destInput: c.destInputName
         }));
 
-        const newPatch: PatchData = {
+        const newPatch: Patch = {
             name: newPresetName,
             patchID: Date.now(),
             modules: moduleStates,
@@ -116,7 +107,7 @@ export const PresetManager: React.FC = () => {
             destInput: c.destInputName
         }));
 
-        const patchData: PatchData = {
+        const patchData: Patch = {
             name: 'Exported Patch',
             patchID: Date.now(),
             modules: moduleStates,
@@ -143,7 +134,7 @@ export const PresetManager: React.FC = () => {
         reader.onload = (e) => {
             try {
                 const content = e.target?.result as string;
-                const patch = JSON.parse(content) as PatchData;
+                const patch = JSON.parse(content) as Patch;
 
                 // Basic validation
                 if (!patch.modules || !patch.connections) {
@@ -177,7 +168,7 @@ export const PresetManager: React.FC = () => {
                             key={`factory-${i}`}
                             onClick={() => {
                                 resumeContext();
-                                loadPatch(preset as any);
+                                loadPatch(preset as unknown as Patch);
                             }}
                             className="focus:bg-zinc-900 focus:text-zinc-100 cursor-pointer"
                         >
@@ -243,7 +234,7 @@ export const PresetManager: React.FC = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            
+
             <div className="relative">
                 <input
                     type="file"

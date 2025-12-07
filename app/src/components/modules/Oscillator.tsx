@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
@@ -13,9 +13,15 @@ interface OscillatorProps {
   name: string;
 }
 
+interface OscillatorState {
+  freq?: number;
+  type?: OscillatorType;
+  level?: number;
+}
+
 export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as OscillatorState) || {};
 
   const [freq, setFreq] = useState(defaultValues.freq ?? 440);
   const [type, setType] = useState<OscillatorType>((defaultValues.type as OscillatorType) ?? 'sine');
@@ -99,7 +105,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
       'level': nodes.gain.gain
     },
     getState: () => ({ freq: freqRef.current, type: typeRef.current, level: levelRef.current }),
-    setState: (state: any) => {
+    setState: (state: OscillatorState) => {
       if (state.freq !== undefined) setFreq(state.freq);
       if (state.type !== undefined) setType(state.type);
       if (state.level !== undefined) setLevel(state.level);

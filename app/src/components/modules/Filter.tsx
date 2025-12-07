@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
@@ -13,9 +13,15 @@ interface FilterProps {
   name: string;
 }
 
+interface FilterState {
+  cutoff?: number;
+  res?: number;
+  type?: BiquadFilterType;
+}
+
 export const Filter: React.FC<FilterProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as FilterState) || {};
 
   const [cutoff, setCutoff] = useState(defaultValues.cutoff ?? 1000);
   const [res, setRes] = useState(defaultValues.res ?? 1);
@@ -83,7 +89,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
       'resonance': nodes.filter.Q
     },
     getState: () => ({ cutoff: cutoffRef.current, res: resRef.current, type: typeRef.current }),
-    setState: (state: any) => {
+    setState: (state: FilterState) => {
       if (state.cutoff !== undefined) setCutoff(state.cutoff);
       if (state.res !== undefined) setRes(state.res);
       if (state.type !== undefined) setType(state.type);
