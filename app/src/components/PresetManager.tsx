@@ -159,7 +159,7 @@ export const PresetManager: React.FC = () => {
   };
 
   return (
-    <div className="flex gap-2 items-center">
+    <div className="flex flex-wrap gap-2 items-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

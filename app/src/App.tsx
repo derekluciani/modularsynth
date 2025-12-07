@@ -57,18 +57,20 @@ function App() {
 
   return (
     <AudioContextProvider>
-      <main className="min-h-screen max-w-6xl mx-auto p-8 transition-colors duration-300">
-        <header className="flex justify-center items-baseline gap-4 mb-12">
-          <h1 className="text-zinc-100 text-3xl font-bold tracking-tight">
-            Modular Synthesizer
-          </h1>
-          <h1 className="text-md font-serif text-zinc-500">v2.6</h1>
-          <div className="ml-auto">
+      <main className="min-h-screen max-w-6xl mx-auto p-3 sm:p-6 transition-colors duration-300">
+        <header className="flex flex-wrap justify-between items-baseline gap-4 mb-12">
+          <div className="flex flex-wrap items-baseline gap-2 sm:gap-4">
+            <h1 className="text-zinc-100 text-3xl font-bold tracking-tight">
+              Modular Synthesizer
+            </h1>
+            <h1 className="text-md font-serif text-zinc-500">v2.6</h1>
+          </div>
+          <div>
             <PresetManager />
           </div>
         </header>
         <Synth />
-        <footer className="flex flex-wrap justify-center items-center gap-6 font-light text-zinc-600 text-xs mt-9">
+        <footer className="flex flex-wrap justify-center items-center gap-6 font-light text-zinc-600 text-xs mt-9 mb-4">
           <div>
             Created by{" "}
             <a
