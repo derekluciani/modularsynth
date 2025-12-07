@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useAudioContext } from '../context/AudioContextProvider';
+import { useAudioContext } from '../context/AudioContext';
 import type { AudioModuleRegistryItem } from './types';
 
 export const useAudioModule = (

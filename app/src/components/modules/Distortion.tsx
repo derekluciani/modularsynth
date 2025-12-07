@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -10,6 +10,12 @@ import { Label } from '../ui/label';
 interface DistortionProps {
   id: string;
   name: string;
+}
+
+interface DistortionState {
+  drive?: number;
+  amount?: number;
+  oversample?: OverSampleType;
 }
 
 function makeDistortionCurve(amount: number) {
@@ -27,7 +33,7 @@ function makeDistortionCurve(amount: number) {
 
 export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as DistortionState) || {};
 
   // Params
   const [drive, setDrive] = useState(defaultValues.drive ?? 0); // Pre-gain (0 to 5)
@@ -108,10 +114,11 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
       'drive': nodes.preGain.gain
     },
     getState: () => ({ drive: driveRef.current, amount: amountRef.current, oversample: oversampleRef.current }),
-    setState: (state: any) => {
-      if (state.drive !== undefined) setDrive(state.drive);
-      if (state.amount !== undefined) setAmount(state.amount);
-      if (state.oversample !== undefined) setOversample(state.oversample);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as DistortionState;
+      if (s.drive !== undefined) setDrive(s.drive);
+      if (s.amount !== undefined) setAmount(s.amount);
+      if (s.oversample !== undefined) setOversample(s.oversample);
     }
   } : null, [nodes]);
 
@@ -137,7 +144,7 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
             max={5}
             step={0.01}
             onValueChange={(v) => setDrive(v[0])}
-            className="[&_.absolute]:bg-orange-500"
+            className="[&_.absolute]:bg-dist"
           />
         </div>
 
@@ -153,7 +160,7 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
             max={100}
             step={1}
             onValueChange={(v) => setAmount(v[0])}
-            className="[&_.absolute]:bg-orange-500"
+            className="[&_.absolute]:bg-dist"
           />
         </div>
 

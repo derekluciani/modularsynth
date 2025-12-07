@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -11,9 +11,13 @@ interface AmpProps {
   name: string;
 }
 
+interface AmpState {
+  gain?: number;
+}
+
 export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AmpState) || {};
 
   const [gain, setGain] = useState(defaultValues.gain ?? 0.5);
 
@@ -58,8 +62,9 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
       'gain': nodes.gain.gain
     },
     getState: () => ({ gain: gainRef.current }),
-    setState: (state: any) => {
-      if (state.gain !== undefined) setGain(state.gain);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as AmpState;
+      if (s.gain !== undefined) setGain(s.gain);
     }
   } : null, [nodes]);
 
@@ -85,7 +90,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
             max={1}
             step={0.01}
             onValueChange={(v) => setGain(v[0])}
-            className="[&_.absolute]:bg-zinc-500"
+            className="[&_.absolute]:bg-amp"
           />
         </div>
       </CardContent>

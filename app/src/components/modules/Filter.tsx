@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
@@ -13,9 +13,15 @@ interface FilterProps {
   name: string;
 }
 
+interface FilterState {
+  cutoff?: number;
+  res?: number;
+  type?: BiquadFilterType;
+}
+
 export const Filter: React.FC<FilterProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as FilterState) || {};
 
   const [cutoff, setCutoff] = useState(defaultValues.cutoff ?? 1000);
   const [res, setRes] = useState(defaultValues.res ?? 1);
@@ -83,10 +89,11 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
       'resonance': nodes.filter.Q
     },
     getState: () => ({ cutoff: cutoffRef.current, res: resRef.current, type: typeRef.current }),
-    setState: (state: any) => {
-      if (state.cutoff !== undefined) setCutoff(state.cutoff);
-      if (state.res !== undefined) setRes(state.res);
-      if (state.type !== undefined) setType(state.type);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as FilterState;
+      if (s.cutoff !== undefined) setCutoff(s.cutoff);
+      if (s.res !== undefined) setRes(s.res); // Changed from s.resonance and setResonance to s.res and setRes for consistency with FilterState and existing state setter
+      if (s.type !== undefined) setType(s.type);
     }
   } : null, [nodes]);
 
@@ -111,7 +118,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setCutoff(linearToLog(v[0], 20, 20000))}
-            className="[&_.absolute]:bg-purple-500"
+            className="[&_.absolute]:bg-filter"
           />
         </div>
 
@@ -126,7 +133,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setRes(linearToLog(v[0], 0.1, 20))}
-            className="[&_.absolute]:bg-purple-500"
+            className="[&_.absolute]:bg-filter"
           />
         </div>
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
@@ -12,9 +12,14 @@ interface DelayProps {
   name: string;
 }
 
+interface DelayState {
+  time?: number;
+  feedback?: number;
+}
+
 export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as DelayState) || {};
 
   const [time, setTime] = useState(defaultValues.time ?? 0.3);
   const [feedback, setFeedback] = useState(defaultValues.feedback ?? 0.4);
@@ -110,9 +115,11 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
       'feedback': nodes.feedbackGain.gain
     },
     getState: () => ({ time: timeRef.current, feedback: feedbackRef.current }),
-    setState: (state: any) => {
-      if (state.time !== undefined) setTime(state.time);
-      if (state.feedback !== undefined) setFeedback(state.feedback);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as DelayState;
+      if (s.time !== undefined) setTime(s.time);
+      if (s.feedback !== undefined) setFeedback(s.feedback);
+
     }
   } : null, [nodes]);
 
@@ -137,7 +144,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setTime(linearToLog(v[0], 0.01, 2.0))}
-            className="[&_.absolute]:bg-blue-500"
+            className="[&_.absolute]:bg-delay"
           />
         </div>
 
@@ -152,7 +159,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             max={0.9}
             step={0.01}
             onValueChange={(v) => setFeedback(v[0])}
-            className="[&_.absolute]:bg-blue-500"
+            className="[&_.absolute]:bg-delay"
           />
         </div>
       </CardContent>

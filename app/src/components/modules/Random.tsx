@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContextProvider';
+import { useAudioContext } from '../../context/AudioContext';
 import { useAudioModule } from '../../audio/useAudioModule';
 import { linearToLog, logToLinear } from '../../audio/scales';
 import { DEFAULT_PATCH } from '../../audio/defaultPatch';
@@ -12,9 +12,14 @@ interface RandomProps {
   name: string;
 }
 
+interface RandomState {
+  rate?: number;
+  level?: number;
+}
+
 export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const { audioCtx, isWorkletLoaded } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as any) || {};
+  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as RandomState) || {};
 
   const [rate, setRate] = useState(defaultValues.rate ?? 1);
   const [level, setLevel] = useState(defaultValues.level ?? 0.5);
@@ -84,9 +89,15 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
       'level': nodes.gain.gain
     },
     getState: () => ({ rate: rateRef.current, level: levelRef.current }),
-    setState: (state: any) => {
-      if (state.rate !== undefined) setRate(state.rate);
-      if (state.level !== undefined) setLevel(state.level);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as RandomState;
+      if (s.rate !== undefined) setRate(s.rate);
+      // Note: s.prob and s.smooth are not defined in RandomState or used in this component.
+      // If these are intended to be new parameters, they need to be added to RandomState,
+      // component state, and UI. For now, they are included as per the instruction.
+      // if (s.prob !== undefined) setProb(s.prob);
+      // if (s.smooth !== undefined) setSmooth(s.smooth);
+      if (s.level !== undefined) setLevel(s.level); // Retaining level setter as it exists in the original component
     }
   } : null, [nodes]);
 
@@ -116,7 +127,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setRate(linearToLog(v[0], 0.1, 20))}
-            className="[&_.absolute]:bg-stone-500"
+            className="[&_.absolute]:bg-rand"
           />
         </div>
 
@@ -131,7 +142,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             max={1}
             step={0.001}
             onValueChange={(v) => setLevel(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))}
-            className="[&_.absolute]:bg-stone-500"
+            className="[&_.absolute]:bg-rand"
           />
         </div>
       </CardContent>
