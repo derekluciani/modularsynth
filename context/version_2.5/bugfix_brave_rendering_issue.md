@@ -1,3 +1,6 @@
+> NOTE: This file is a proposal to fix a known issue with Brave Browser. As of 12/7/2025, this has not been implemented and instead has been resolved by the user turning off "Shielding" in the browser.
+
+
 # Bug Fix: Brave Browser Rendering Issue
 
 ## Problem
