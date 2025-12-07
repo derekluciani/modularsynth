@@ -62,8 +62,9 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
       'gain': nodes.gain.gain
     },
     getState: () => ({ gain: gainRef.current }),
-    setState: (state: AmpState) => {
-      if (state.gain !== undefined) setGain(state.gain);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as AmpState;
+      if (s.gain !== undefined) setGain(s.gain);
     }
   } : null, [nodes]);
 

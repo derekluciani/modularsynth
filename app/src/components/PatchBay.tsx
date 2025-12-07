@@ -168,11 +168,11 @@ export const PatchBay: React.FC = () => {
   return (
     <Card className="grow max-w-2xl bg-zinc-950 border-zinc-800 shadow-lg gap-1">
       <CardHeader className="border-zinc-800 pb-4 gap-0">
-        <CardTitle className="text-lg text-zinc-100">Patch Bay</CardTitle>
+        <CardTitle className="text-lg text-zinc-100">Connect modules</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* New Connection Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end bg-zinc-950/50 p-4 rounded-lg border border-zinc-800">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end">
           <div className="flex flex-col">
             <label className="text-xs font-medium text-zinc-400 mb-2">
               Source
@@ -181,10 +181,10 @@ export const PatchBay: React.FC = () => {
               value={selectedSourceId}
               onValueChange={(val) => setSelectedSourceId(val)}
             >
-              <SelectTrigger className="w-full bg-zinc-900 border-zinc-700 text-zinc-200">
+              <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-200">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-100">
+              <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-200 max-h-100">
                 {sourceOptions.map((opt) => (
                   <SelectItem
                     key={`${opt.id}:${opt.node}`}
@@ -211,10 +211,10 @@ export const PatchBay: React.FC = () => {
                 setSelectedDestInput(inputName);
               }}
             >
-              <SelectTrigger className="w-full bg-zinc-900 border-zinc-700 text-zinc-200">
+              <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-200">
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200 max-h-100">
+              <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-200 max-h-100">
                 {destInputs.length > 0 && (
                   <SelectGroup>
                     <SelectLabel>Module</SelectLabel>
@@ -265,7 +265,7 @@ export const PatchBay: React.FC = () => {
         {/* Active Connections List */}
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-zinc-300">
-            Active Connections
+            Active connections
           </h3>
           {connections.length === 0 ? (
             <div className="text-zinc-600 text-sm italic py-4 text-center border border-dashed border-zinc-800 rounded">

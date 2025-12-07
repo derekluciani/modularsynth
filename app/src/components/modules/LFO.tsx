@@ -133,10 +133,11 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
             amount: amountRef.current,
             type: typeRef.current,
           }),
-          setState: (state: LFOState) => {
-            if (state.freq !== undefined) setFreq(state.freq);
-            if (state.amount !== undefined) setAmount(state.amount);
-            if (state.type !== undefined) setType(state.type);
+          setState: (state: Record<string, unknown>) => {
+            const s = state as unknown as LFOState;
+            if (s.freq !== undefined) setFreq(s.freq);
+            if (s.amount !== undefined) setAmount(s.amount);
+            if (s.type !== undefined) setType(s.type);
           },
         }
         : null,

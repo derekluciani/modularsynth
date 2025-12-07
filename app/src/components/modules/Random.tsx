@@ -89,9 +89,15 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
       'level': nodes.gain.gain
     },
     getState: () => ({ rate: rateRef.current, level: levelRef.current }),
-    setState: (state: RandomState) => {
-      if (state.rate !== undefined) setRate(state.rate);
-      if (state.level !== undefined) setLevel(state.level);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as RandomState;
+      if (s.rate !== undefined) setRate(s.rate);
+      // Note: s.prob and s.smooth are not defined in RandomState or used in this component.
+      // If these are intended to be new parameters, they need to be added to RandomState,
+      // component state, and UI. For now, they are included as per the instruction.
+      // if (s.prob !== undefined) setProb(s.prob);
+      // if (s.smooth !== undefined) setSmooth(s.smooth);
+      if (s.level !== undefined) setLevel(s.level); // Retaining level setter as it exists in the original component
     }
   } : null, [nodes]);
 

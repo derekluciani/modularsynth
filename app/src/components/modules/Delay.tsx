@@ -115,9 +115,11 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
       'feedback': nodes.feedbackGain.gain
     },
     getState: () => ({ time: timeRef.current, feedback: feedbackRef.current }),
-    setState: (state: DelayState) => {
-      if (state.time !== undefined) setTime(state.time);
-      if (state.feedback !== undefined) setFeedback(state.feedback);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as DelayState;
+      if (s.time !== undefined) setTime(s.time);
+      if (s.feedback !== undefined) setFeedback(s.feedback);
+
     }
   } : null, [nodes]);
 

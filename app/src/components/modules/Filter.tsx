@@ -89,10 +89,11 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
       'resonance': nodes.filter.Q
     },
     getState: () => ({ cutoff: cutoffRef.current, res: resRef.current, type: typeRef.current }),
-    setState: (state: FilterState) => {
-      if (state.cutoff !== undefined) setCutoff(state.cutoff);
-      if (state.res !== undefined) setRes(state.res);
-      if (state.type !== undefined) setType(state.type);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as FilterState;
+      if (s.cutoff !== undefined) setCutoff(s.cutoff);
+      if (s.res !== undefined) setRes(s.res); // Changed from s.resonance and setResonance to s.res and setRes for consistency with FilterState and existing state setter
+      if (s.type !== undefined) setType(s.type);
     }
   } : null, [nodes]);
 

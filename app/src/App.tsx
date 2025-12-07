@@ -62,13 +62,13 @@ function App() {
           <h1 className="text-zinc-100 text-3xl font-bold tracking-tight">
             Modular Synthesizer
           </h1>
-          <h1 className="text-md font-serif text-zinc-500">v2.5</h1>
+          <h1 className="text-md font-serif text-zinc-500">v2.6</h1>
           <div className="ml-auto">
             <PresetManager />
           </div>
         </header>
         <Synth />
-        <footer className="flex flex-wrap justify-center items-center gap-6 font-light text-zinc-600 text-sm mt-9">
+        <footer className="flex flex-wrap justify-center items-center gap-6 font-light text-zinc-600 text-xs mt-9">
           <div>
             Created by{" "}
             <a

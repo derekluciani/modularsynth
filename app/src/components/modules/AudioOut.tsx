@@ -20,7 +20,7 @@ interface AudioOutState {
 }
 
 export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
-  const { audioCtx, analyserNode, resumeContext } = useAudioContext();
+  const { audioCtx, analyserNode } = useAudioContext();
   const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AudioOutState) || {};
 
   const [volume, setVolume] = useState(defaultValues.volume ?? -6); // dB
@@ -123,10 +123,11 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
       'pan': nodes.panner.pan
     },
     getState: () => ({ volume: volumeRef.current, pan: panRef.current, isMuted: isMutedRef.current }),
-    setState: (state: AudioOutState) => {
-      if (state.volume !== undefined) setVolume(state.volume);
-      if (state.pan !== undefined) setPan(state.pan);
-      if (state.isMuted !== undefined) setIsMuted(state.isMuted);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as AudioOutState;
+      if (s.volume !== undefined) setVolume(s.volume);
+      if (s.pan !== undefined) setPan(s.pan);
+      if (s.isMuted !== undefined) setIsMuted(s.isMuted);
     }
   } : null, [nodes]);
 
@@ -149,15 +150,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pt-4">
-        {/* Resume Context Button (if suspended)*/}
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full text-xs"
-          onClick={() => resumeContext()}
-        >
-          Re-trigger audio
-        </Button>
+
 
         {/* Volume */}
         <div className="space-y-2">

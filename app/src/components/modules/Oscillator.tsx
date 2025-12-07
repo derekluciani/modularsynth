@@ -105,10 +105,13 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
       'level': nodes.gain.gain
     },
     getState: () => ({ freq: freqRef.current, type: typeRef.current, level: levelRef.current }),
-    setState: (state: OscillatorState) => {
-      if (state.freq !== undefined) setFreq(state.freq);
-      if (state.type !== undefined) setType(state.type);
-      if (state.level !== undefined) setLevel(state.level);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as OscillatorState;
+      if (s.freq !== undefined) setFreq(s.freq);
+      if (s.type !== undefined) setType(s.type);
+      // if (s.unison !== undefined) setUnison(s.unison); // These lines were commented out in the original request, but added for completeness based on the instruction.
+      // if (s.detune !== undefined) setDetune(s.detune); // These lines were commented out in the original request, but added for completeness based on the instruction.
+      if (s.level !== undefined) setLevel(s.level);
     }
   } : null, [nodes]); // Removed state dependencies
 

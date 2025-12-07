@@ -114,10 +114,11 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
       'drive': nodes.preGain.gain
     },
     getState: () => ({ drive: driveRef.current, amount: amountRef.current, oversample: oversampleRef.current }),
-    setState: (state: DistortionState) => {
-      if (state.drive !== undefined) setDrive(state.drive);
-      if (state.amount !== undefined) setAmount(state.amount);
-      if (state.oversample !== undefined) setOversample(state.oversample);
+    setState: (state: Record<string, unknown>) => {
+      const s = state as unknown as DistortionState;
+      if (s.drive !== undefined) setDrive(s.drive);
+      if (s.amount !== undefined) setAmount(s.amount);
+      if (s.oversample !== undefined) setOversample(s.oversample);
     }
   } : null, [nodes]);
 
