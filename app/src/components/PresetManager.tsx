@@ -29,7 +29,10 @@ export const PresetManager: React.FC = () => {
   const [newPresetName, setNewPresetName] = useState("");
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
 
-  // Load presets from localStorage on mount
+  // State for the first-time visitor tooltip
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Load presets from localStorage on mount and check if tooltip should be displayed
   useEffect(() => {
     const saved = localStorage.getItem("synth_presets");
     if (saved) {
@@ -39,7 +42,20 @@ export const PresetManager: React.FC = () => {
         console.error("Failed to parse presets", e);
       }
     }
+
+    // Check if user has already dismissed the tooltip
+    const isTooltipDismissed = localStorage.getItem("synth_tooltip_dismissed");
+    if (!isTooltipDismissed) {
+      setShowTooltip(true);
+    }
   }, []);
+
+  // Dismiss tooltip and store setting in localStorage
+  const dismissTooltip = () => {
+    setShowTooltip(false);
+    localStorage.setItem("synth_tooltip_dismissed", "true");
+    window.dispatchEvent(new Event("load_tooltip_dismissed"));
+  };
 
   const savePatch = () => {
     resumeContext();
@@ -160,28 +176,30 @@ export const PresetManager: React.FC = () => {
 
   return (
     <div className="flex flex-wrap gap-2 items-center">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300"
-          >
-            <FolderOpen className="w-4 h-4" />
-            Load
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="bg-zinc-950 border-zinc-800 text-zinc-100 w-56">
-          <DropdownMenuLabel className="text-zinc-500 text-xs font-normal">
-            Factory Presets
-          </DropdownMenuLabel>
-          {defaultPresets.map((preset, i) => (
-            <DropdownMenuItem
-              key={`factory-${i}`}
-              onClick={() => {
-                resumeContext();
-                loadPatch(preset as unknown as Patch);
-              }}
+      <div className="relative">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={dismissTooltip}
+              className="gap-2 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300"
+            >
+              <FolderOpen className="w-4 h-4" />
+              Load
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="bg-zinc-950 border-zinc-800 text-zinc-100 w-56">
+            <DropdownMenuLabel className="text-zinc-500 text-xs font-normal">
+              Factory Presets
+            </DropdownMenuLabel>
+            {defaultPresets.map((preset, i) => (
+              <DropdownMenuItem
+                key={`factory-${i}`}
+                onClick={() => {
+                  resumeContext();
+                  loadPatch(preset as unknown as Patch);
+                }}
               className="focus:bg-zinc-900 focus:text-zinc-100 cursor-pointer"
             >
               {preset.name}
@@ -223,6 +241,19 @@ export const PresetManager: React.FC = () => {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {showTooltip && (
+        <div
+          onClick={dismissTooltip}
+          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs rounded-md shadow-2xl cursor-pointer hover:bg-zinc-800 transition-colors select-none font-medium whitespace-nowrap"
+          role="tooltip"
+        >
+          {/* Arrow pointing up to the Load button */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-zinc-800" />
+          Start by loading a preset
+        </div>
+      )}
+      </div>
 
       <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
         <DialogTrigger asChild>

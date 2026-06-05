@@ -27,6 +27,36 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   const [pan, setPan] = useState(defaultValues.pan ?? 0);
   const [isMuted, setIsMuted] = useState(defaultValues.isMuted ?? false);
 
+  // State for showing the speaker play/pause explanation tooltip
+  const [showSpeakerTooltip, setShowSpeakerTooltip] = useState(false);
+
+  // Check tooltip visibility on mount and listen to dismissal events from the Load tooltip
+  useEffect(() => {
+    const isLoadDismissed = localStorage.getItem("synth_tooltip_dismissed") === "true";
+    const isSpeakerDismissed = localStorage.getItem("speaker_tooltip_dismissed") === "true";
+    if (isLoadDismissed && !isSpeakerDismissed) {
+      setShowSpeakerTooltip(true);
+    }
+
+    const handleLoadTooltipDismissed = () => {
+      const dismissed = localStorage.getItem("speaker_tooltip_dismissed") === "true";
+      if (!dismissed) {
+        setShowSpeakerTooltip(true);
+      }
+    };
+
+    window.addEventListener("load_tooltip_dismissed", handleLoadTooltipDismissed);
+    return () => {
+      window.removeEventListener("load_tooltip_dismissed", handleLoadTooltipDismissed);
+    };
+  }, []);
+
+  // Helper to dismiss Speaker tooltip and store in localStorage
+  const dismissSpeakerTooltip = () => {
+    setShowSpeakerTooltip(false);
+    localStorage.setItem("speaker_tooltip_dismissed", "true");
+  };
+
   const [nodes, setNodes] = useState<{ panner: StereoPannerNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ panner: StereoPannerNode; gain: GainNode } | null>(null);
 
@@ -139,14 +169,33 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
       <CardHeader className="border-zinc-800 bg-zinc-950/50">
         <CardTitle className="text-zinc-100 flex justify-between items-center">
           <span>Speaker</span>
-          <Button
-            variant="outline"
-            size="icon-lg"
-            className={`${isMuted ? 'text-red-500' : 'text-green-500'}`}
-            onClick={() => setIsMuted(!isMuted)}
-          >
-            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-          </Button>
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="icon-lg"
+              className={`${isMuted ? 'text-red-500' : 'text-green-500'}`}
+              onClick={() => {
+                setIsMuted(!isMuted);
+                dismissSpeakerTooltip();
+              }}
+            >
+              {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            </Button>
+            {showSpeakerTooltip && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismissSpeakerTooltip();
+                }}
+                className="absolute bottom-full right-0 mb-2 z-50 p-3 bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs rounded-md shadow-2xl cursor-pointer hover:bg-zinc-850 transition-colors select-none w-64"
+                role="tooltip"
+              >
+                {/* Arrow pointing down to the Speaker button */}
+                <div className="absolute top-full right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-zinc-800" />
+                Fun Fact: There is no play/pause function on analog modular synths. The audio source is always playing. Use this button to mute/unmute.
+              </div>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pt-4">
