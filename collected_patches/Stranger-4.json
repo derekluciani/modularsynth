@@ -1,0 +1,158 @@
+{
+  "name": "Exported Patch",
+  "patchID": 1765232903356,
+  "modules": {
+    "osc-1": {
+      "freq": 32.03189070912389,
+      "type": "sawtooth",
+      "level": 0.68
+    },
+    "osc-2": {
+      "freq": 63.636615907012256,
+      "type": "sawtooth",
+      "level": 0.62
+    },
+    "osc-3": {
+      "freq": 65.25105423696976,
+      "type": "triangle",
+      "level": 0.6
+    },
+    "osc-4": {
+      "freq": 254.96722384470274,
+      "type": "sawtooth",
+      "level": 0.65
+    },
+    "filter-1": {
+      "cutoff": 543.2878537678165,
+      "res": 1.1563141973679323,
+      "type": "lowpass"
+    },
+    "filter-2": {
+      "cutoff": 291.76285205506974,
+      "res": 0.6771296459966354,
+      "type": "lowpass"
+    },
+    "distort": {
+      "drive": 2.5,
+      "amount": 47,
+      "oversample": "2x"
+    },
+    "delay": {
+      "time": 0.3952890800182738,
+      "feedback": 0.2
+    },
+    "lfo-1": {
+      "freq": 0.19735300198360037,
+      "amount": 168.26740610704672,
+      "type": "sine"
+    },
+    "lfo-2": {
+      "freq": 0.3200671058161657,
+      "amount": 1000,
+      "type": "sine"
+    },
+    "lfo-3": {
+      "freq": 12,
+      "amount": 2.3227367963571086,
+      "type": "sawtooth"
+    },
+    "amp": {
+      "gain": 0.6
+    },
+    "speaker": {
+      "volume": -6,
+      "pan": 0,
+      "isMuted": false
+    },
+    "random": {
+      "rate": 1.74805944648536,
+      "level": 0.4875284901033864
+    }
+  },
+  "connections": [
+    {
+      "sourceId": "osc-1",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "filter-1",
+      "sourceNode": "output",
+      "destId": "amp",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "amp",
+      "sourceNode": "output",
+      "destId": "speaker",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "osc-2",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-1",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "cutoff"
+    },
+    {
+      "sourceId": "osc-3",
+      "sourceNode": "output",
+      "destId": "filter-2",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "delay",
+      "sourceNode": "output",
+      "destId": "amp",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-2",
+      "sourceNode": "output",
+      "destId": "osc-3",
+      "destInput": "pitch"
+    },
+    {
+      "sourceId": "osc-4",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "random",
+      "sourceNode": "output",
+      "destId": "lfo-3",
+      "destInput": "frequency"
+    },
+    {
+      "sourceId": "lfo-3",
+      "sourceNode": "output",
+      "destId": "osc-4",
+      "destInput": "pitch"
+    },
+    {
+      "sourceId": "filter-1",
+      "sourceNode": "output",
+      "destId": "delay",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "delay",
+      "sourceNode": "output",
+      "destId": "distort",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "distort",
+      "sourceNode": "output",
+      "destId": "amp",
+      "destInput": "input"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "name": "Exported Patch",
+  "patchID": 1764168827176,
+  "modules": {
+    "lfo-3": {
+      "freq": 0.1,
+      "amount": 0,
+      "type": "sine"
+    },
+    "osc-3": {
+      "freq": 20,
+      "type": "sawtooth",
+      "level": 0
+    },
+    "osc-4": {
+      "freq": 20,
+      "type": "sawtooth",
+      "level": 0
+    },
+    "filter-2": {
+      "cutoff": 20,
+      "res": 0.1,
+      "type": "lowpass"
+    },
+    "distort": {
+      "drive": 0,
+      "amount": 0,
+      "oversample": "4x"
+    },
+    "delay": {
+      "time": 0.01,
+      "feedback": 0.001
+    },
+    "amp": {
+      "gain": 0.7
+    },
+    "filter-1": {
+      "cutoff": 177.4312024075922,
+      "res": 1.4142135623730951,
+      "type": "lowpass"
+    },
+    "osc-1": {
+      "freq": 109.87554031618731,
+      "type": "sawtooth",
+      "level": 0.5
+    },
+    "lfo-1": {
+      "freq": 2.81312693166102,
+      "amount": 136,
+      "type": "sine"
+    },
+    "lfo-2": {
+      "freq": 0.7018216593919868,
+      "amount": 261,
+      "type": "square"
+    },
+    "speaker": {
+      "volume": -6,
+      "pan": 0,
+      "isMuted": false
+    },
+    "random": {
+      "rate": 0.27656534450503845,
+      "level": 0.55
+    },
+    "osc-2": {
+      "freq": 110.98216848572471,
+      "type": "sawtooth",
+      "level": 0.39
+    }
+  },
+  "connections": [
+    {
+      "sourceId": "amp",
+      "sourceNode": "output",
+      "destId": "speaker",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "filter-1",
+      "sourceNode": "output",
+      "destId": "amp",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "osc-1",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-1",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "cutoff"
+    },
+    {
+      "sourceId": "osc-2",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    }
+  ]
+}

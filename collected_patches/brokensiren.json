@@ -1,0 +1,116 @@
+{
+  "name": "Exported Patch",
+  "patchID": 1764130344130,
+  "modules": {
+    "osc-1": {
+      "freq": 440,
+      "type": "sawtooth",
+      "level": 0.5
+    },
+    "amp": {
+      "gain": 0.5
+    },
+    "lfo-1": {
+      "freq": 0.48496113864372825,
+      "amount": 224,
+      "type": "sine"
+    },
+    "lfo-2": {
+      "freq": 0.16896702968622096,
+      "amount": 740,
+      "type": "sine"
+    },
+    "lfo-3": {
+      "freq": 0.1,
+      "amount": 0,
+      "type": "sine"
+    },
+    "random": {
+      "rate": 0.1,
+      "level": 0
+    },
+    "osc-2": {
+      "freq": 64.27754173612836,
+      "type": "sine",
+      "level": 1
+    },
+    "osc-3": {
+      "freq": 20,
+      "type": "sawtooth",
+      "level": 0
+    },
+    "osc-4": {
+      "freq": 20,
+      "type": "sawtooth",
+      "level": 0
+    },
+    "filter-1": {
+      "cutoff": 827.999349639461,
+      "res": 0.3681742229846698,
+      "type": "bandpass"
+    },
+    "filter-2": {
+      "cutoff": 20,
+      "res": 0.1,
+      "type": "lowpass"
+    },
+    "distort": {
+      "drive": 0.98,
+      "amount": 50,
+      "oversample": "2x"
+    },
+    "delay": {
+      "time": 0.01,
+      "feedback": 0.001
+    },
+    "speaker": {
+      "volume": -6,
+      "pan": 0,
+      "isMuted": false
+    }
+  },
+  "connections": [
+    {
+      "sourceId": "lfo-1",
+      "sourceNode": "output",
+      "destId": "osc-1",
+      "destInput": "pitch"
+    },
+    {
+      "sourceId": "osc-1",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "osc-2",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "amp",
+      "sourceNode": "output",
+      "destId": "speaker",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "lfo-2",
+      "sourceNode": "output",
+      "destId": "filter-1",
+      "destInput": "cutoff"
+    },
+    {
+      "sourceId": "filter-1",
+      "sourceNode": "output",
+      "destId": "distort",
+      "destInput": "input"
+    },
+    {
+      "sourceId": "distort",
+      "sourceNode": "output",
+      "destId": "amp",
+      "destInput": "input"
+    }
+  ]
+}
