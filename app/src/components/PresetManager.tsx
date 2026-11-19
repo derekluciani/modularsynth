@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAudioContext } from "../context/AudioContext";
 import { defaultPresets } from "../data/presets";
 import type { Patch } from "../audio/types";
@@ -25,30 +25,24 @@ import { Download, Upload, Save, FolderOpen, Trash2 } from "lucide-react";
 
 export const PresetManager: React.FC = () => {
   const { modules, connections, loadPatch, resumeContext } = useAudioContext();
-  const [presets, setPresets] = useState<Patch[]>([]);
+  const [presets, setPresets] = useState<Patch[]>(() => {
+    try {
+      const saved = localStorage.getItem("synth_presets");
+      return saved ? (JSON.parse(saved) as Patch[]) : [];
+    } catch (error) {
+      console.error("Failed to load presets", error);
+      return [];
+    }
+  });
   const [newPresetName, setNewPresetName] = useState("");
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(
+    () => !localStorage.getItem("synth_tooltip_dismissed"),
+  );
 
-  // State for the first-time visitor tooltip
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  // Load presets from localStorage on mount and check if tooltip should be displayed
-  useEffect(() => {
-    const saved = localStorage.getItem("synth_presets");
-    if (saved) {
-      try {
-        setPresets(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse presets", e);
-      }
-    }
-
-    // Check if user has already dismissed the tooltip
-    const isTooltipDismissed = localStorage.getItem("synth_tooltip_dismissed");
-    if (!isTooltipDismissed) {
-      setShowTooltip(true);
-    }
-  }, []);
+  const requestAudioResume = () => {
+    void resumeContext().catch((error) => console.error("Failed to resume audio:", error));
+  };
 
   // Dismiss tooltip and store setting in localStorage
   const dismissTooltip = () => {
@@ -58,7 +52,7 @@ export const PresetManager: React.FC = () => {
   };
 
   const savePatch = () => {
-    resumeContext();
+    requestAudioResume();
     if (!newPresetName.trim()) return;
 
     const moduleStates: Record<string, Record<string, unknown>> = {};
@@ -101,9 +95,7 @@ export const PresetManager: React.FC = () => {
 
   const clearPresets = () => {
     if (
-      window.confirm(
-        "Are you sure you want to delete all saved patches? This cannot be undone.",
-      )
+      window.confirm("Are you sure you want to delete all saved patches? This cannot be undone.")
     ) {
       localStorage.removeItem("synth_presets");
       setPresets([]);
@@ -146,7 +138,7 @@ export const PresetManager: React.FC = () => {
   };
 
   const importPatch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    resumeContext();
+    requestAudioResume();
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -197,62 +189,60 @@ export const PresetManager: React.FC = () => {
               <DropdownMenuItem
                 key={`factory-${i}`}
                 onClick={() => {
-                  resumeContext();
+                  requestAudioResume();
                   loadPatch(preset as unknown as Patch);
                 }}
-              className="focus:bg-zinc-900 focus:text-zinc-100 cursor-pointer"
-            >
-              {preset.name}
-            </DropdownMenuItem>
-          ))}
-
-          <DropdownMenuSeparator className="bg-zinc-800" />
-          <DropdownMenuLabel className="text-zinc-500 text-xs font-normal">
-            User Presets
-          </DropdownMenuLabel>
-
-          {presets.length === 0 ? (
-            <div className="p-2 text-sm text-zinc-500 italic">
-              No saved patches
-            </div>
-          ) : (
-            <>
-              {presets.map((preset, i) => (
-                <DropdownMenuItem
-                  key={i}
-                  onClick={() => {
-                    resumeContext();
-                    loadPatch(preset);
-                  }}
-                  className="focus:bg-zinc-900 focus:text-zinc-100 cursor-pointer"
-                >
-                  {preset.name}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator className="bg-zinc-800" />
-              <DropdownMenuItem
-                onClick={clearPresets}
-                className="focus:bg-red-900/30 focus:text-red-400 text-red-400 cursor-pointer gap-2"
+                className="focus:bg-zinc-900 focus:text-zinc-100 cursor-pointer"
               >
-                <Trash2 className="w-4 h-4" />
-                Clear All
+                {preset.name}
               </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+            ))}
 
-      {showTooltip && (
-        <div
-          onClick={dismissTooltip}
-          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs rounded-md shadow-2xl cursor-pointer hover:bg-zinc-800 transition-colors select-none font-medium whitespace-nowrap"
-          role="tooltip"
-        >
-          {/* Arrow pointing up to the Load button */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-zinc-800" />
-          Start by loading a preset
-        </div>
-      )}
+            <DropdownMenuSeparator className="bg-zinc-800" />
+            <DropdownMenuLabel className="text-zinc-500 text-xs font-normal">
+              User Presets
+            </DropdownMenuLabel>
+
+            {presets.length === 0 ? (
+              <div className="p-2 text-sm text-zinc-500 italic">No saved patches</div>
+            ) : (
+              <>
+                {presets.map((preset, i) => (
+                  <DropdownMenuItem
+                    key={i}
+                    onClick={() => {
+                      requestAudioResume();
+                      loadPatch(preset);
+                    }}
+                    className="focus:bg-zinc-900 focus:text-zinc-100 cursor-pointer"
+                  >
+                    {preset.name}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator className="bg-zinc-800" />
+                <DropdownMenuItem
+                  onClick={clearPresets}
+                  className="focus:bg-red-900/30 focus:text-red-400 text-red-400 cursor-pointer gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Clear All
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {showTooltip && (
+          <div
+            onClick={dismissTooltip}
+            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-100 text-xs rounded-md shadow-2xl cursor-pointer hover:bg-zinc-800 transition-colors select-none font-medium whitespace-nowrap"
+            role="tooltip"
+          >
+            {/* Arrow pointing up to the Load button */}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-zinc-800" />
+            Start by loading a preset
+          </div>
+        )}
       </div>
 
       <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
@@ -283,10 +273,7 @@ export const PresetManager: React.FC = () => {
             />
           </div>
           <DialogFooter>
-            <Button
-              onClick={savePatch}
-              className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
-            >
+            <Button onClick={savePatch} className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200">
               Save
             </Button>
           </DialogFooter>

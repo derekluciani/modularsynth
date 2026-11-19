@@ -60,9 +60,7 @@ function App() {
       <main className="min-h-screen max-w-6xl mx-auto p-3 sm:p-6 transition-colors duration-300">
         <header className="flex flex-wrap justify-between items-baseline gap-4 mb-12">
           <div className="flex flex-wrap items-baseline gap-2 sm:gap-4">
-            <h1 className="text-zinc-100 text-3xl font-bold tracking-tight">
-              Modular Synthesizer
-            </h1>
+            <h1 className="text-zinc-100 text-3xl font-bold tracking-tight">Modular Synthesizer</h1>
             <h1 className="text-md font-serif text-zinc-500">v2.6</h1>
           </div>
           <div>
@@ -83,10 +81,7 @@ function App() {
             </a>{" "}
             with agentic LLMs
           </div>
-          <ThemeSelector
-            currentTheme={currentTheme}
-            onThemeChange={setCurrentTheme}
-          />
+          <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
         </footer>
       </main>
     </AudioContextProvider>

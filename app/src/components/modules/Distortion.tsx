@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContext';
-import { useAudioModule } from '../../audio/useAudioModule';
-import { DEFAULT_PATCH } from '../../audio/defaultPatch';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Slider } from '../ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Label } from '../ui/label';
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useAudioContext } from "../../context/AudioContext";
+import { useAudioModule } from "../../audio/useAudioModule";
+import { DEFAULT_PATCH } from "../../audio/defaultPatch";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Slider } from "../ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Label } from "../ui/label";
 
 interface DistortionProps {
   id: string;
@@ -19,29 +19,40 @@ interface DistortionState {
 }
 
 function makeDistortionCurve(amount: number) {
-  const k = typeof amount === 'number' ? amount : 50;
+  const k = typeof amount === "number" ? amount : 50;
   const n_samples = 44100;
   const curve = new Float32Array(n_samples);
   const deg = Math.PI / 180;
 
   for (let i = 0; i < n_samples; ++i) {
-    const x = i * 2 / n_samples - 1;
-    curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+    const x = (i * 2) / n_samples - 1;
+    curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
   }
   return curve;
 }
 
 export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as DistortionState) || {};
+  const defaultValues =
+    (DEFAULT_PATCH.modules[
+      id as keyof typeof DEFAULT_PATCH.modules
+    ] as unknown as DistortionState) || {};
 
   // Params
   const [drive, setDrive] = useState(defaultValues.drive ?? 0); // Pre-gain (0 to 5)
   const [amount, setAmount] = useState(defaultValues.amount ?? 0); // Curve amount (0 to 100)
-  const [oversample, setOversample] = useState<OverSampleType>((defaultValues.oversample as OverSampleType) ?? 'none');
+  const [oversample, setOversample] = useState<OverSampleType>(
+    (defaultValues.oversample as OverSampleType) ?? "none",
+  );
 
-  const [nodes, setNodes] = useState<{ preGain: GainNode; shaper: WaveShaperNode; postGain: GainNode } | null>(null);
-  const nodesRef = useRef<{ preGain: GainNode; shaper: WaveShaperNode; postGain: GainNode } | null>(null);
+  const [nodes, setNodes] = useState<{
+    preGain: GainNode;
+    shaper: WaveShaperNode;
+    postGain: GainNode;
+  } | null>(null);
+  const nodesRef = useRef<{ preGain: GainNode; shaper: WaveShaperNode; postGain: GainNode } | null>(
+    null,
+  );
 
   // Initialize Nodes
   useEffect(() => {
@@ -70,7 +81,7 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
       shaper.disconnect();
       postGain.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx]);
 
   // Update Params
@@ -97,30 +108,46 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
   const amountRef = useRef(amount);
   const oversampleRef = useRef(oversample);
 
-  useEffect(() => { driveRef.current = drive; }, [drive]);
-  useEffect(() => { amountRef.current = amount; }, [amount]);
-  useEffect(() => { oversampleRef.current = oversample; }, [oversample]);
+  useEffect(() => {
+    driveRef.current = drive;
+  }, [drive]);
+  useEffect(() => {
+    amountRef.current = amount;
+  }, [amount]);
+  useEffect(() => {
+    oversampleRef.current = oversample;
+  }, [oversample]);
 
   // Register Module
-  const moduleDef = useMemo(() => nodes ? {
-    type: 'Distortion' as const,
-    inputs: {
-      'input': nodes.preGain
-    },
-    outputs: {
-      'output': nodes.postGain
-    },
-    params: {
-      'drive': nodes.preGain.gain
-    },
-    getState: () => ({ drive: driveRef.current, amount: amountRef.current, oversample: oversampleRef.current }),
-    setState: (state: Record<string, unknown>) => {
-      const s = state as unknown as DistortionState;
-      if (s.drive !== undefined) setDrive(s.drive);
-      if (s.amount !== undefined) setAmount(s.amount);
-      if (s.oversample !== undefined) setOversample(s.oversample);
-    }
-  } : null, [nodes]);
+  const moduleDef = useMemo(
+    () =>
+      nodes
+        ? {
+            type: "Distortion" as const,
+            inputs: {
+              input: nodes.preGain,
+            },
+            outputs: {
+              output: nodes.postGain,
+            },
+            params: {
+              drive: nodes.preGain.gain,
+            },
+            getState: () => ({
+              drive: driveRef.current,
+              amount: amountRef.current,
+              oversample: oversampleRef.current,
+            }),
+            setState: (state: Record<string, unknown>) => {
+              const s = state as unknown as DistortionState;
+              if (s.drive !== undefined) setDrive(s.drive);
+              if (s.amount !== undefined) setAmount(s.amount);
+              if (s.oversample !== undefined) setOversample(s.oversample);
+            },
+          }
+        : null,
+    [nodes],
+  );
 
   useAudioModule(id, moduleDef);
 

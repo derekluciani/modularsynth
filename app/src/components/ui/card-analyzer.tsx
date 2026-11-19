@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function CardAnalyzer({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -8,24 +8,15 @@ function CardAnalyzer({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card-analyzer"
       className={cn(
         "bg-analyzer border-zinc-800 flex flex-col gap-6 rounded-lg border shadow-sm",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CardAnalyzerContent({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-analyzer-content"
-      className={cn("px-6", className)}
-      {...props}
-    />
-  )
+  return <div data-slot="card-analyzer-content" className={cn("px-6", className)} {...props} />;
 }
 
-export {
-  CardAnalyzer,
-  CardAnalyzerContent,
-}
+export { CardAnalyzer, CardAnalyzerContent };

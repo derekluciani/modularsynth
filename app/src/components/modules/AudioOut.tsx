@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContext';
-import { useAudioModule } from '../../audio/useAudioModule';
-import { dbToGain } from '../../audio/scales';
-import { DEFAULT_PATCH } from '../../audio/defaultPatch';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Slider } from '../ui/slider';
-import { Label } from '../ui/label';
-import { Button } from '../ui/button';
-import { Volume2, VolumeX } from 'lucide-react';
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useAudioContext } from "../../context/AudioContext";
+import { useAudioModule } from "../../audio/useAudioModule";
+import { dbToGain } from "../../audio/scales";
+import { DEFAULT_PATCH } from "../../audio/defaultPatch";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Slider } from "../ui/slider";
+import { Label } from "../ui/label";
+import { Button } from "../ui/button";
+import { Volume2, VolumeX } from "lucide-react";
 
 interface AudioOutProps {
   id: string;
@@ -21,7 +21,9 @@ interface AudioOutState {
 
 export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   const { audioCtx, analyserNode } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AudioOutState) || {};
+  const defaultValues =
+    (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AudioOutState) ||
+    {};
 
   const [volume, setVolume] = useState(defaultValues.volume ?? -6); // dB
   const [pan, setPan] = useState(defaultValues.pan ?? 0);
@@ -115,7 +117,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
         nodesRef.current.panner.disconnect();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx]);
 
   // Handle updates
@@ -137,29 +139,45 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   const panRef = useRef(pan);
   const isMutedRef = useRef(isMuted);
 
-  useEffect(() => { volumeRef.current = volume; }, [volume]);
-  useEffect(() => { panRef.current = pan; }, [pan]);
-  useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
+  useEffect(() => {
+    volumeRef.current = volume;
+  }, [volume]);
+  useEffect(() => {
+    panRef.current = pan;
+  }, [pan]);
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
 
   // Memoize module definition
-  const moduleDef = useMemo(() => nodes ? {
-    type: 'AudioOut' as const,
-    inputs: {
-      'input': nodes.panner
-    },
-    outputs: {}, // No outputs, it's the final destination
-    params: {
-      'volume': nodes.gain.gain,
-      'pan': nodes.panner.pan
-    },
-    getState: () => ({ volume: volumeRef.current, pan: panRef.current, isMuted: isMutedRef.current }),
-    setState: (state: Record<string, unknown>) => {
-      const s = state as unknown as AudioOutState;
-      if (s.volume !== undefined) setVolume(s.volume);
-      if (s.pan !== undefined) setPan(s.pan);
-      if (s.isMuted !== undefined) setIsMuted(s.isMuted);
-    }
-  } : null, [nodes]);
+  const moduleDef = useMemo(
+    () =>
+      nodes
+        ? {
+            type: "AudioOut" as const,
+            inputs: {
+              input: nodes.panner,
+            },
+            outputs: {}, // No outputs, it's the final destination
+            params: {
+              volume: nodes.gain.gain,
+              pan: nodes.panner.pan,
+            },
+            getState: () => ({
+              volume: volumeRef.current,
+              pan: panRef.current,
+              isMuted: isMutedRef.current,
+            }),
+            setState: (state: Record<string, unknown>) => {
+              const s = state as unknown as AudioOutState;
+              if (s.volume !== undefined) setVolume(s.volume);
+              if (s.pan !== undefined) setPan(s.pan);
+              if (s.isMuted !== undefined) setIsMuted(s.isMuted);
+            },
+          }
+        : null,
+    [nodes],
+  );
 
   // Register module
   useAudioModule(id, moduleDef);
@@ -173,7 +191,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             <Button
               variant="outline"
               size="icon-lg"
-              className={`${isMuted ? 'text-red-500' : 'text-green-500'}`}
+              className={`${isMuted ? "text-red-500" : "text-green-500"}`}
               onClick={() => {
                 setIsMuted(!isMuted);
                 dismissSpeakerTooltip();
@@ -192,15 +210,14 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
               >
                 {/* Arrow pointing down to the Speaker button */}
                 <div className="absolute top-full right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-zinc-800" />
-                Fun Fact: There is no play/pause function on analog modular synths. The audio source is always playing. Use this button to mute/unmute.
+                Fun Fact: There is no play/pause function on analog modular synths. The audio source
+                is always playing. Use this button to mute/unmute.
               </div>
             )}
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pt-4">
-
-
         {/* Volume */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">

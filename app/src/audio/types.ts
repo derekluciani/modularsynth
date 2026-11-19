@@ -1,12 +1,12 @@
 export type ModuleType =
-  | 'Oscillator'
-  | 'Filter'
-  | 'LFO'
-  | 'Random'
-  | 'Delay'
-  | 'Amp'
-  | 'AudioOut'
-  | 'Distortion';
+  | "Oscillator"
+  | "Filter"
+  | "LFO"
+  | "Random"
+  | "Delay"
+  | "Amp"
+  | "AudioOut"
+  | "Distortion";
 
 export interface AudioModuleRegistryItem {
   id: string;

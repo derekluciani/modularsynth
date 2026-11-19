@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContext';
-import { useAudioModule } from '../../audio/useAudioModule';
-import { linearToLog, logToLinear } from '../../audio/scales';
-import { DEFAULT_PATCH } from '../../audio/defaultPatch';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Slider } from '../ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Label } from '../ui/label';
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useAudioContext } from "../../context/AudioContext";
+import { useAudioModule } from "../../audio/useAudioModule";
+import { linearToLog, logToLinear } from "../../audio/scales";
+import { DEFAULT_PATCH } from "../../audio/defaultPatch";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Slider } from "../ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Label } from "../ui/label";
 
 interface OscillatorProps {
   id: string;
@@ -21,10 +21,15 @@ interface OscillatorState {
 
 export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as OscillatorState) || {};
+  const defaultValues =
+    (DEFAULT_PATCH.modules[
+      id as keyof typeof DEFAULT_PATCH.modules
+    ] as unknown as OscillatorState) || {};
 
   const [freq, setFreq] = useState(defaultValues.freq ?? 440);
-  const [type, setType] = useState<OscillatorType>((defaultValues.type as OscillatorType) ?? 'sine');
+  const [type, setType] = useState<OscillatorType>(
+    (defaultValues.type as OscillatorType) ?? "sine",
+  );
   const [level, setLevel] = useState(defaultValues.level ?? 0.5);
 
   const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
@@ -56,7 +61,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
       osc.disconnect();
       gain.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx]); // Only re-run if ctx changes (mount)
 
   // Handle parameter updates
@@ -85,35 +90,51 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   const typeRef = useRef(type);
   const levelRef = useRef(level);
 
-  useEffect(() => { freqRef.current = freq; }, [freq]);
-  useEffect(() => { typeRef.current = type; }, [type]);
-  useEffect(() => { levelRef.current = level; }, [level]);
+  useEffect(() => {
+    freqRef.current = freq;
+  }, [freq]);
+  useEffect(() => {
+    typeRef.current = type;
+  }, [type]);
+  useEffect(() => {
+    levelRef.current = level;
+  }, [level]);
 
   // Memoize module definition to prevent infinite loops
-  const moduleDef = useMemo(() => nodes ? {
-    type: 'Oscillator' as const,
-    inputs: {
-      // FM modulation usually goes to frequency
-      'pitch': nodes.osc.frequency,
-      'level': nodes.gain.gain
-    },
-    outputs: {
-      'output': nodes.gain
-    },
-    params: {
-      'pitch': nodes.osc.frequency,
-      'level': nodes.gain.gain
-    },
-    getState: () => ({ freq: freqRef.current, type: typeRef.current, level: levelRef.current }),
-    setState: (state: Record<string, unknown>) => {
-      const s = state as unknown as OscillatorState;
-      if (s.freq !== undefined) setFreq(s.freq);
-      if (s.type !== undefined) setType(s.type);
-      // if (s.unison !== undefined) setUnison(s.unison); // These lines were commented out in the original request, but added for completeness based on the instruction.
-      // if (s.detune !== undefined) setDetune(s.detune); // These lines were commented out in the original request, but added for completeness based on the instruction.
-      if (s.level !== undefined) setLevel(s.level);
-    }
-  } : null, [nodes]); // Removed state dependencies
+  const moduleDef = useMemo(
+    () =>
+      nodes
+        ? {
+            type: "Oscillator" as const,
+            inputs: {
+              // FM modulation usually goes to frequency
+              pitch: nodes.osc.frequency,
+              level: nodes.gain.gain,
+            },
+            outputs: {
+              output: nodes.gain,
+            },
+            params: {
+              pitch: nodes.osc.frequency,
+              level: nodes.gain.gain,
+            },
+            getState: () => ({
+              freq: freqRef.current,
+              type: typeRef.current,
+              level: levelRef.current,
+            }),
+            setState: (state: Record<string, unknown>) => {
+              const s = state as unknown as OscillatorState;
+              if (s.freq !== undefined) setFreq(s.freq);
+              if (s.type !== undefined) setType(s.type);
+              // if (s.unison !== undefined) setUnison(s.unison); // These lines were commented out in the original request, but added for completeness based on the instruction.
+              // if (s.detune !== undefined) setDetune(s.detune); // These lines were commented out in the original request, but added for completeness based on the instruction.
+              if (s.level !== undefined) setLevel(s.level);
+            },
+          }
+        : null,
+    [nodes],
+  ); // Removed state dependencies
 
   // Register module
   useAudioModule(id, moduleDef);

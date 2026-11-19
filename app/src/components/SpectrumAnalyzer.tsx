@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { useAudioContext } from '../context/AudioContext';
+import { useAudioContext } from "../context/AudioContext";
 import { CardAnalyzer, CardAnalyzerContent } from "./ui/card-analyzer";
 
 export const SpectrumAnalyzer: React.FC = () => {
@@ -74,12 +74,7 @@ export const SpectrumAnalyzer: React.FC = () => {
   return (
     <CardAnalyzer className="w-full shadow-lg shadow-black/50">
       <CardAnalyzerContent className="p-0">
-        <canvas
-          ref={canvasRef}
-          width={800}
-          height={150}
-          className="w-full h-[150px] rounded-lg"
-        />
+        <canvas ref={canvasRef} width={800} height={150} className="w-full h-[150px] rounded-lg" />
       </CardAnalyzerContent>
     </CardAnalyzer>
   );

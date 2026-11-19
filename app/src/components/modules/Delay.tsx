@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContext';
-import { useAudioModule } from '../../audio/useAudioModule';
-import { linearToLog, logToLinear } from '../../audio/scales';
-import { DEFAULT_PATCH } from '../../audio/defaultPatch';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Slider } from '../ui/slider';
-import { Label } from '../ui/label';
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useAudioContext } from "../../context/AudioContext";
+import { useAudioModule } from "../../audio/useAudioModule";
+import { linearToLog, logToLinear } from "../../audio/scales";
+import { DEFAULT_PATCH } from "../../audio/defaultPatch";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Slider } from "../ui/slider";
+import { Label } from "../ui/label";
 
 interface DelayProps {
   id: string;
@@ -19,13 +19,25 @@ interface DelayState {
 
 export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as DelayState) || {};
+  const defaultValues =
+    (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as DelayState) ||
+    {};
 
   const [time, setTime] = useState(defaultValues.time ?? 0.3);
   const [feedback, setFeedback] = useState(defaultValues.feedback ?? 0.4);
 
-  const [nodes, setNodes] = useState<{ delay: DelayNode; feedbackGain: GainNode; inputGain: GainNode; outputGain: GainNode } | null>(null);
-  const nodesRef = useRef<{ delay: DelayNode; feedbackGain: GainNode; inputGain: GainNode; outputGain: GainNode } | null>(null);
+  const [nodes, setNodes] = useState<{
+    delay: DelayNode;
+    feedbackGain: GainNode;
+    inputGain: GainNode;
+    outputGain: GainNode;
+  } | null>(null);
+  const nodesRef = useRef<{
+    delay: DelayNode;
+    feedbackGain: GainNode;
+    inputGain: GainNode;
+    outputGain: GainNode;
+  } | null>(null);
 
   useEffect(() => {
     if (!audioCtx) return;
@@ -56,7 +68,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
     // If we just output the delay line, user must mix it themselves.
     // But usually "Delay" module implies an effect unit.
     // Let's route Input -> Delay -> Output. And Input -> Output (Dry).
-    // Actually, if we want a true modular delay, we often just want the delayed signal. 
+    // Actually, if we want a true modular delay, we often just want the delayed signal.
     // But for simplicity and typical usage without a mixer module:
     // Let's do: Input -> Output (Direct) AND Input -> Delay -> Output.
     // Wait, if we chain Osc -> Delay -> AudioOut, we expect to hear the Osc AND the echo.
@@ -78,7 +90,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
       delayNode.disconnect();
       feedbackGain.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx]);
 
   useEffect(() => {
@@ -97,31 +109,40 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   const timeRef = useRef(time);
   const feedbackRef = useRef(feedback);
 
-  useEffect(() => { timeRef.current = time; }, [time]);
-  useEffect(() => { feedbackRef.current = feedback; }, [feedback]);
+  useEffect(() => {
+    timeRef.current = time;
+  }, [time]);
+  useEffect(() => {
+    feedbackRef.current = feedback;
+  }, [feedback]);
 
-  const moduleDef = useMemo(() => nodes ? {
-    type: 'Delay' as const,
-    inputs: {
-      'input': nodes.inputGain,
-      'time': nodes.delay.delayTime,
-      'feedback': nodes.feedbackGain.gain
-    },
-    outputs: {
-      'output': nodes.outputGain
-    },
-    params: {
-      'time': nodes.delay.delayTime,
-      'feedback': nodes.feedbackGain.gain
-    },
-    getState: () => ({ time: timeRef.current, feedback: feedbackRef.current }),
-    setState: (state: Record<string, unknown>) => {
-      const s = state as unknown as DelayState;
-      if (s.time !== undefined) setTime(s.time);
-      if (s.feedback !== undefined) setFeedback(s.feedback);
-
-    }
-  } : null, [nodes]);
+  const moduleDef = useMemo(
+    () =>
+      nodes
+        ? {
+            type: "Delay" as const,
+            inputs: {
+              input: nodes.inputGain,
+              time: nodes.delay.delayTime,
+              feedback: nodes.feedbackGain.gain,
+            },
+            outputs: {
+              output: nodes.outputGain,
+            },
+            params: {
+              time: nodes.delay.delayTime,
+              feedback: nodes.feedbackGain.gain,
+            },
+            getState: () => ({ time: timeRef.current, feedback: feedbackRef.current }),
+            setState: (state: Record<string, unknown>) => {
+              const s = state as unknown as DelayState;
+              if (s.time !== undefined) setTime(s.time);
+              if (s.feedback !== undefined) setFeedback(s.feedback);
+            },
+          }
+        : null,
+    [nodes],
+  );
 
   useAudioModule(id, moduleDef);
 

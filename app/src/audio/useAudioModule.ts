@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import { useAudioContext } from '../context/AudioContext';
-import type { AudioModuleRegistryItem } from './types';
+import { useEffect } from "react";
+import { useAudioContext } from "../context/AudioContext";
+import type { AudioModuleRegistryItem } from "./types";
 
 export const useAudioModule = (
   id: string,
-  definition: Omit<AudioModuleRegistryItem, 'id'> | null
+  definition: Omit<AudioModuleRegistryItem, "id"> | null,
 ) => {
   const { registerModule, unregisterModule } = useAudioContext();
 
@@ -13,7 +13,7 @@ export const useAudioModule = (
 
     registerModule(id, {
       id,
-      ...definition
+      ...definition,
     });
 
     return () => {

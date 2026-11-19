@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContext';
-import { useAudioModule } from '../../audio/useAudioModule';
-import { linearToLog, logToLinear } from '../../audio/scales';
-import { DEFAULT_PATCH } from '../../audio/defaultPatch';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Slider } from '../ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Label } from '../ui/label';
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useAudioContext } from "../../context/AudioContext";
+import { useAudioModule } from "../../audio/useAudioModule";
+import { linearToLog, logToLinear } from "../../audio/scales";
+import { DEFAULT_PATCH } from "../../audio/defaultPatch";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Slider } from "../ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Label } from "../ui/label";
 
 interface FilterProps {
   id: string;
@@ -21,11 +21,15 @@ interface FilterState {
 
 export const Filter: React.FC<FilterProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as FilterState) || {};
+  const defaultValues =
+    (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as FilterState) ||
+    {};
 
   const [cutoff, setCutoff] = useState(defaultValues.cutoff ?? 1000);
   const [res, setRes] = useState(defaultValues.res ?? 1);
-  const [type, setType] = useState<BiquadFilterType>((defaultValues.type as BiquadFilterType) ?? 'lowpass');
+  const [type, setType] = useState<BiquadFilterType>(
+    (defaultValues.type as BiquadFilterType) ?? "lowpass",
+  );
 
   const [nodes, setNodes] = useState<{ filter: BiquadFilterNode } | null>(null);
   const nodesRef = useRef<{ filter: BiquadFilterNode } | null>(null);
@@ -44,7 +48,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
     return () => {
       filter.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx]);
 
   useEffect(() => {
@@ -70,32 +74,48 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
   const resRef = useRef(res);
   const typeRef = useRef(type);
 
-  useEffect(() => { cutoffRef.current = cutoff; }, [cutoff]);
-  useEffect(() => { resRef.current = res; }, [res]);
-  useEffect(() => { typeRef.current = type; }, [type]);
+  useEffect(() => {
+    cutoffRef.current = cutoff;
+  }, [cutoff]);
+  useEffect(() => {
+    resRef.current = res;
+  }, [res]);
+  useEffect(() => {
+    typeRef.current = type;
+  }, [type]);
 
-  const moduleDef = useMemo(() => nodes ? {
-    type: 'Filter' as const,
-    inputs: {
-      'input': nodes.filter,
-      'cutoff': nodes.filter.frequency,
-      'resonance': nodes.filter.Q
-    },
-    outputs: {
-      'output': nodes.filter
-    },
-    params: {
-      'cutoff': nodes.filter.frequency,
-      'resonance': nodes.filter.Q
-    },
-    getState: () => ({ cutoff: cutoffRef.current, res: resRef.current, type: typeRef.current }),
-    setState: (state: Record<string, unknown>) => {
-      const s = state as unknown as FilterState;
-      if (s.cutoff !== undefined) setCutoff(s.cutoff);
-      if (s.res !== undefined) setRes(s.res); // Changed from s.resonance and setResonance to s.res and setRes for consistency with FilterState and existing state setter
-      if (s.type !== undefined) setType(s.type);
-    }
-  } : null, [nodes]);
+  const moduleDef = useMemo(
+    () =>
+      nodes
+        ? {
+            type: "Filter" as const,
+            inputs: {
+              input: nodes.filter,
+              cutoff: nodes.filter.frequency,
+              resonance: nodes.filter.Q,
+            },
+            outputs: {
+              output: nodes.filter,
+            },
+            params: {
+              cutoff: nodes.filter.frequency,
+              resonance: nodes.filter.Q,
+            },
+            getState: () => ({
+              cutoff: cutoffRef.current,
+              res: resRef.current,
+              type: typeRef.current,
+            }),
+            setState: (state: Record<string, unknown>) => {
+              const s = state as unknown as FilterState;
+              if (s.cutoff !== undefined) setCutoff(s.cutoff);
+              if (s.res !== undefined) setRes(s.res); // Changed from s.resonance and setResonance to s.res and setRes for consistency with FilterState and existing state setter
+              if (s.type !== undefined) setType(s.type);
+            },
+          }
+        : null,
+    [nodes],
+  );
 
   useAudioModule(id, moduleDef);
 
