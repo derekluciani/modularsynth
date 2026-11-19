@@ -1,14 +1,14 @@
-import type { AudioModuleRegistryItem } from './types';
+import type { AudioModuleRegistryItem } from "./types";
 
 export const makeConnection = (
   sourceModule: AudioModuleRegistryItem,
   sourceNodeName: string,
   destModule: AudioModuleRegistryItem,
   destInputName: string,
-  isParam: boolean
+  isParam: boolean,
 ): boolean => {
   const sourceNode = sourceModule.outputs[sourceNodeName];
-  
+
   if (!sourceNode) {
     console.error(`Source node '${sourceNodeName}' not found in module '${sourceModule.id}'`);
     return false;
@@ -18,14 +18,18 @@ export const makeConnection = (
     if (isParam) {
       const destParam = destModule.params[destInputName] as AudioParam;
       if (!destParam) {
-        console.error(`Destination param '${destInputName}' not found in module '${destModule.id}'`);
+        console.error(
+          `Destination param '${destInputName}' not found in module '${destModule.id}'`,
+        );
         return false;
       }
       sourceNode.connect(destParam);
     } else {
       const destNode = destModule.inputs[destInputName] as AudioNode;
       if (!destNode) {
-        console.error(`Destination input node '${destInputName}' not found in module '${destModule.id}'`);
+        console.error(
+          `Destination input node '${destInputName}' not found in module '${destModule.id}'`,
+        );
         return false;
       }
       sourceNode.connect(destNode);
@@ -42,10 +46,10 @@ export const breakConnection = (
   sourceNodeName: string,
   destModule: AudioModuleRegistryItem,
   destInputName: string,
-  isParam: boolean
+  isParam: boolean,
 ) => {
   const sourceNode = sourceModule.outputs[sourceNodeName];
-  
+
   if (!sourceNode) return;
 
   try {

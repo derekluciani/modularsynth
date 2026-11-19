@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContext';
-import { useAudioModule } from '../../audio/useAudioModule';
-import { linearToLog, logToLinear } from '../../audio/scales';
-import { DEFAULT_PATCH } from '../../audio/defaultPatch';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Slider } from '../ui/slider';
-import { Label } from '../ui/label';
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useAudioContext } from "../../context/AudioContext";
+import { useAudioModule } from "../../audio/useAudioModule";
+import { linearToLog, logToLinear } from "../../audio/scales";
+import { DEFAULT_PATCH } from "../../audio/defaultPatch";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Slider } from "../ui/slider";
+import { Label } from "../ui/label";
 
 interface RandomProps {
   id: string;
@@ -19,7 +19,9 @@ interface RandomState {
 
 export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const { audioCtx, isWorkletLoaded } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as RandomState) || {};
+  const defaultValues =
+    (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as RandomState) ||
+    {};
 
   const [rate, setRate] = useState(defaultValues.rate ?? 1);
   const [level, setLevel] = useState(defaultValues.level ?? 0.5);
@@ -31,11 +33,11 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
     if (!audioCtx || !isWorkletLoaded) return;
 
     try {
-      const worklet = new AudioWorkletNode(audioCtx, 'random-processor');
+      const worklet = new AudioWorkletNode(audioCtx, "random-processor");
       const gainNode = audioCtx.createGain();
 
       // Parameters
-      const rateParam = worklet.parameters.get('rate');
+      const rateParam = worklet.parameters.get("rate");
       if (rateParam) rateParam.value = rate;
       gainNode.gain.value = level;
 
@@ -51,12 +53,12 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
     } catch (err) {
       console.error("Failed to create Random worklet node", err);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx, isWorkletLoaded]);
 
   useEffect(() => {
     if (nodes && audioCtx) {
-      const rateParam = nodes.worklet.parameters.get('rate');
+      const rateParam = nodes.worklet.parameters.get("rate");
       if (rateParam) {
         rateParam.setTargetAtTime(rate, audioCtx.currentTime, 0.01);
       }
@@ -73,33 +75,43 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const rateRef = useRef(rate);
   const levelRef = useRef(level);
 
-  useEffect(() => { rateRef.current = rate; }, [rate]);
-  useEffect(() => { levelRef.current = level; }, [level]);
+  useEffect(() => {
+    rateRef.current = rate;
+  }, [rate]);
+  useEffect(() => {
+    levelRef.current = level;
+  }, [level]);
 
-  const moduleDef = useMemo(() => nodes ? {
-    type: 'Random' as const,
-    inputs: {
-      'rate': nodes.worklet.parameters.get('rate') as AudioParam, // Allows modulating rate
-    },
-    outputs: {
-      'output': nodes.gain
-    },
-    params: {
-      'rate': nodes.worklet.parameters.get('rate') as AudioParam,
-      'level': nodes.gain.gain
-    },
-    getState: () => ({ rate: rateRef.current, level: levelRef.current }),
-    setState: (state: Record<string, unknown>) => {
-      const s = state as unknown as RandomState;
-      if (s.rate !== undefined) setRate(s.rate);
-      // Note: s.prob and s.smooth are not defined in RandomState or used in this component.
-      // If these are intended to be new parameters, they need to be added to RandomState,
-      // component state, and UI. For now, they are included as per the instruction.
-      // if (s.prob !== undefined) setProb(s.prob);
-      // if (s.smooth !== undefined) setSmooth(s.smooth);
-      if (s.level !== undefined) setLevel(s.level); // Retaining level setter as it exists in the original component
-    }
-  } : null, [nodes]);
+  const moduleDef = useMemo(
+    () =>
+      nodes
+        ? {
+            type: "Random" as const,
+            inputs: {
+              rate: nodes.worklet.parameters.get("rate") as AudioParam, // Allows modulating rate
+            },
+            outputs: {
+              output: nodes.gain,
+            },
+            params: {
+              rate: nodes.worklet.parameters.get("rate") as AudioParam,
+              level: nodes.gain.gain,
+            },
+            getState: () => ({ rate: rateRef.current, level: levelRef.current }),
+            setState: (state: Record<string, unknown>) => {
+              const s = state as unknown as RandomState;
+              if (s.rate !== undefined) setRate(s.rate);
+              // Note: s.prob and s.smooth are not defined in RandomState or used in this component.
+              // If these are intended to be new parameters, they need to be added to RandomState,
+              // component state, and UI. For now, they are included as per the instruction.
+              // if (s.prob !== undefined) setProb(s.prob);
+              // if (s.smooth !== undefined) setSmooth(s.smooth);
+              if (s.level !== undefined) setLevel(s.level); // Retaining level setter as it exists in the original component
+            },
+          }
+        : null,
+    [nodes],
+  );
 
   useAudioModule(id, moduleDef);
 
@@ -112,9 +124,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!isWorkletLoaded && (
-          <div className="text-red-500 text-xs">Processor loading...</div>
-        )}
+        {!isWorkletLoaded && <div className="text-red-500 text-xs">Processor loading...</div>}
 
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
@@ -134,7 +144,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Level</Label>
-            <span>{level === 0 ? '0' : level < 1 ? level.toFixed(3) : Math.round(level)}</span>
+            <span>{level === 0 ? "0" : level < 1 ? level.toFixed(3) : Math.round(level)}</span>
           </div>
           <Slider
             value={[level === 0 ? 0 : logToLinear(level, 0.001, 1000)]}

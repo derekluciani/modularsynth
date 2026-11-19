@@ -5,10 +5,4 @@ import mindScan from "./Mind Scan.json";
 // import drone from './Drone.json';
 import onTheRun from "./On The Run.json";
 
-export const defaultPresets = [
-  basicPatch,
-  upsideDown,
-  mindScan,
-  drive,
-  onTheRun,
-];
+export const defaultPresets = [basicPatch, upsideDown, mindScan, drive, onTheRun];

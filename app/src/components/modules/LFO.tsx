@@ -1,17 +1,11 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { useAudioContext } from '../../context/AudioContext';
+import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
 import { linearToLog, logToLinear } from "../../audio/scales";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
 
 interface LFOProps {
@@ -28,9 +22,7 @@ interface LFOState {
 export const LFO: React.FC<LFOProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const defaultValues =
-    (DEFAULT_PATCH.modules[
-      id as keyof typeof DEFAULT_PATCH.modules
-    ] as unknown as LFOState) || {};
+    (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as LFOState) || {};
 
   const [freq, setFreq] = useState(defaultValues.freq ?? 1); // Hz
   const [amount, setAmount] = useState(defaultValues.amount ?? 0.5); // Amplitude
@@ -77,7 +69,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
       osc.disconnect();
       gain.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx]);
 
   useEffect(() => {
@@ -117,29 +109,29 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
     () =>
       nodes
         ? {
-          type: "LFO" as const,
-          inputs: {
-            frequency: nodes.osc.frequency,
-          },
-          outputs: {
-            output: nodes.gain,
-          },
-          params: {
-            frequency: nodes.osc.frequency,
-            amount: nodes.gain.gain,
-          },
-          getState: () => ({
-            freq: freqRef.current,
-            amount: amountRef.current,
-            type: typeRef.current,
-          }),
-          setState: (state: Record<string, unknown>) => {
-            const s = state as unknown as LFOState;
-            if (s.freq !== undefined) setFreq(s.freq);
-            if (s.amount !== undefined) setAmount(s.amount);
-            if (s.type !== undefined) setType(s.type);
-          },
-        }
+            type: "LFO" as const,
+            inputs: {
+              frequency: nodes.osc.frequency,
+            },
+            outputs: {
+              output: nodes.gain,
+            },
+            params: {
+              frequency: nodes.osc.frequency,
+              amount: nodes.gain.gain,
+            },
+            getState: () => ({
+              freq: freqRef.current,
+              amount: amountRef.current,
+              type: typeRef.current,
+            }),
+            setState: (state: Record<string, unknown>) => {
+              const s = state as unknown as LFOState;
+              if (s.freq !== undefined) setFreq(s.freq);
+              if (s.amount !== undefined) setAmount(s.amount);
+              if (s.type !== undefined) setType(s.type);
+            },
+          }
         : null,
     [nodes],
   );
@@ -177,32 +169,21 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
             <Label>Amount</Label>
-            <span>
-              {amount === 0
-                ? "0"
-                : amount < 1
-                  ? amount.toFixed(3)
-                  : Math.round(amount)}
-            </span>
+            <span>{amount === 0 ? "0" : amount < 1 ? amount.toFixed(3) : Math.round(amount)}</span>
           </div>
           <Slider
             value={[amount === 0 ? 0 : logToLinear(amount, 0.001, 1000)]}
             min={0}
             max={1}
             step={0.001}
-            onValueChange={(v) =>
-              setAmount(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))
-            }
+            onValueChange={(v) => setAmount(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))}
             className="[&_.absolute]:bg-lfo"
           />
         </div>
 
         <div className="space-y-2">
           <Label className="text-xs text-zinc-400">Shape</Label>
-          <Select
-            value={type}
-            onValueChange={(v) => setType(v as OscillatorType)}
-          >
+          <Select value={type} onValueChange={(v) => setType(v as OscillatorType)}>
             <SelectTrigger className="h-8 text-xs bg-zinc-950 border-zinc-800 text-zinc-100">
               <SelectValue />
             </SelectTrigger>

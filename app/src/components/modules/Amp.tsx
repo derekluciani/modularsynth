@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { useAudioContext } from '../../context/AudioContext';
-import { useAudioModule } from '../../audio/useAudioModule';
-import { DEFAULT_PATCH } from '../../audio/defaultPatch';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Slider } from '../ui/slider';
-import { Label } from '../ui/label';
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useAudioContext } from "../../context/AudioContext";
+import { useAudioModule } from "../../audio/useAudioModule";
+import { DEFAULT_PATCH } from "../../audio/defaultPatch";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Slider } from "../ui/slider";
+import { Label } from "../ui/label";
 
 interface AmpProps {
   id: string;
@@ -17,7 +17,8 @@ interface AmpState {
 
 export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
-  const defaultValues = (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AmpState) || {};
+  const defaultValues =
+    (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AmpState) || {};
 
   const [gain, setGain] = useState(defaultValues.gain ?? 0.5);
 
@@ -36,7 +37,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
     return () => {
       gainNode.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [audioCtx]);
 
   useEffect(() => {
@@ -47,26 +48,34 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
 
   // Refs for state access in moduleDef
   const gainRef = useRef(gain);
-  useEffect(() => { gainRef.current = gain; }, [gain]);
+  useEffect(() => {
+    gainRef.current = gain;
+  }, [gain]);
 
-  const moduleDef = useMemo(() => nodes ? {
-    type: 'Amp' as const,
-    inputs: {
-      'input': nodes.gain,
-      'gain': nodes.gain.gain // Modulation input for AM / tremolo
-    },
-    outputs: {
-      'output': nodes.gain
-    },
-    params: {
-      'gain': nodes.gain.gain
-    },
-    getState: () => ({ gain: gainRef.current }),
-    setState: (state: Record<string, unknown>) => {
-      const s = state as unknown as AmpState;
-      if (s.gain !== undefined) setGain(s.gain);
-    }
-  } : null, [nodes]);
+  const moduleDef = useMemo(
+    () =>
+      nodes
+        ? {
+            type: "Amp" as const,
+            inputs: {
+              input: nodes.gain,
+              gain: nodes.gain.gain, // Modulation input for AM / tremolo
+            },
+            outputs: {
+              output: nodes.gain,
+            },
+            params: {
+              gain: nodes.gain.gain,
+            },
+            getState: () => ({ gain: gainRef.current }),
+            setState: (state: Record<string, unknown>) => {
+              const s = state as unknown as AmpState;
+              if (s.gain !== undefined) setGain(s.gain);
+            },
+          }
+        : null,
+    [nodes],
+  );
 
   useAudioModule(id, moduleDef);
 

@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+# Modular Synth app
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This React and Web Audio app uses [Vite+](https://viteplus.dev/guide/). Install the `vp` CLI, then run these commands from `app/`:
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+vp install
+vp run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the local URL printed by the dev server. Press `Ctrl+C` to stop it.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Before committing
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+vp check
+vp test --run
+vp run build
 ```
+
+## Vite+ command reference
+
+| Command                        | What it does                                                     |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `vp install`                   | Install dependencies. Run after pulling dependency changes.      |
+| `vp install --frozen-lockfile` | Install from the lockfile without allowing updates.              |
+| `vp run dev`                   | Start the development server with hot reload.                    |
+| `vp check`                     | Check formatting, lint, and types without editing files.         |
+| `vp fmt`                       | Apply formatting to project files.                               |
+| `vp run lint`                  | Run the project's lint script.                                   |
+| `vp test`                      | Start tests in watch mode in an interactive terminal.            |
+| `vp test --run`                | Run the test suite once and exit.                                |
+| `vp run build`                 | Run `tsc -b`, then build the production app into `dist/`.        |
+| `vp run preview`               | Serve the production build locally. Run the build first.         |
+| `vp env doctor`                | Diagnose Node.js, npm, and Vite+ PATH setup.                     |
+| `vp toolchain`                 | Show the active tool versions.                                   |
+| `vp why <package>`             | Show the package-manager dependency graph.                       |
+| `vp help`                      | List commands. Use `vp <command> --help` for flags and examples. |
+
+See [the app README](app/README.md#vite-command-reference) for the Vite+ command reference, including tests, formatting, builds, and local preview.
+
+## Running Scripts
+
+- Use `vp run <script>` for this app's `package.json` scripts. For example, `vp run build` includes the TypeScript build step, while the built-in `vp build` only bundles the app.
+- Run TypeScript and JavaScript files with `vpx <file>`, for example `vpx ./scripts/seed.ts --dry-run`. It handles enums, decorators, JSX, and tsconfig `paths`, so do not add `tsx` or `ts-node` to run scripts. `vpx --watch <file>` reruns the file when a file it uses changes, in place of `tsx watch`. `vp node <file>` runs plain Node.js.
+
+Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.dev/guide/.
