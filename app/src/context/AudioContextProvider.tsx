@@ -1,7 +1,13 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
-import type { AudioContextType, AudioModuleRegistryItem, Connection, Patch } from "../audio/types";
-import { makeConnection, breakConnection } from "../audio/patching";
+import type {
+  AudioContextType,
+  AudioModuleRegistryItem,
+  Connection,
+  Patch,
+  SerializedConnection,
+} from "../audio/types";
+import { createPatchConnections } from "../audio/patching";
 import { DEFAULT_PATCH } from "../audio/defaultPatch";
 import { AudioContextReact } from "./AudioContext";
 
@@ -18,7 +24,11 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
   const analyserNode = audioGraph?.analyserNode ?? null;
   const [isWorkletLoaded, setIsWorkletLoaded] = useState(false);
   const [modules, setModules] = useState<Record<string, AudioModuleRegistryItem>>({});
+  const modulesRef = useRef(modules);
+  // Own live cables separately from the connection snapshot rendered by React.
+  const [patchConnections] = useState(createPatchConnections);
   const [connections, setConnections] = useState<Connection[]>([]);
+  const pendingPatchRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const hasInitializedRef = useRef(false);
 
   useEffect(() => {
@@ -46,9 +56,11 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
 
     return () => {
       disposed = true;
+      clearTimeout(pendingPatchRef.current);
+      patchConnections.clear();
       void ctx.close().catch((error) => console.error("Failed to close AudioContext:", error));
     };
-  }, []);
+  }, [patchConnections]);
 
   const resumeContext = useCallback(async () => {
     if (audioCtx && audioCtx.state === "suspended") {
@@ -57,160 +69,87 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
   }, [audioCtx]);
 
   const registerModule = useCallback((id: string, data: AudioModuleRegistryItem) => {
-    setModules((prev) => ({
-      ...prev,
-      [id]: data,
-    }));
+    modulesRef.current = { ...modulesRef.current, [id]: data };
+    setModules(modulesRef.current);
   }, []);
 
-  const unregisterModule = useCallback((id: string) => {
-    setModules((prev) => {
-      const next = { ...prev };
+  const unregisterModule = useCallback(
+    (id: string) => {
+      const next = { ...modulesRef.current };
       delete next[id];
-      return next;
-    });
-  }, []);
+      modulesRef.current = next;
+      setModules(next);
+      if (patchConnections.removeModule(id)) {
+        setConnections(patchConnections.getConnections());
+      }
+    },
+    [patchConnections],
+  );
+
+  const connectCable = useCallback(
+    ({ sourceId, sourceNode, destId, destInput }: SerializedConnection) => {
+      const sourceModule = modulesRef.current[sourceId];
+      const destModule = modulesRef.current[destId];
+      if (!sourceModule || !destModule) return false;
+
+      return patchConnections.connect({
+        sourceModule,
+        sourceNodeName: sourceNode,
+        destModule,
+        destInputName: destInput,
+      });
+    },
+    [patchConnections],
+  );
 
   const connect = useCallback(
     (sourceId: string, sourceNode: string, destId: string, destInput: string) => {
-      const sourceModule = modules[sourceId];
-      const destModule = modules[destId];
-
-      if (!sourceModule || !destModule) {
-        console.error("Cannot connect: module not found", { sourceId, destId });
-        return;
-      }
-
-      // Determine if destination is param or node
-      const isParam = !!destModule.params[destInput];
-      // If not param, check inputs
-      if (!isParam && !destModule.inputs[destInput]) {
-        console.error(`Destination input '${destInput}' not found on module '${destId}'`);
-        return;
-      }
-
-      const success = makeConnection(sourceModule, sourceNode, destModule, destInput, isParam);
-
-      if (success) {
-        const newConnection: Connection = {
-          id: `${sourceId}-${sourceNode}-${destId}-${destInput}`,
-          sourceModuleId: sourceId,
-          sourceNodeName: sourceNode,
-          destModuleId: destId,
-          destInputName: destInput,
-          isParam,
-        };
-        setConnections((prev) => [...prev, newConnection]);
+      if (connectCable({ sourceId, sourceNode, destId, destInput })) {
+        setConnections(patchConnections.getConnections());
       }
     },
-    [modules],
+    [connectCable, patchConnections],
   );
 
   const disconnect = useCallback(
     (connectionId: string) => {
-      setConnections((prev) => {
-        const conn = prev.find((c) => c.id === connectionId);
-        if (!conn) return prev;
-
-        const sourceModule = modules[conn.sourceModuleId];
-        const destModule = modules[conn.destModuleId];
-
-        if (sourceModule && destModule) {
-          breakConnection(
-            sourceModule,
-            conn.sourceNodeName,
-            destModule,
-            conn.destInputName,
-            conn.isParam,
-          );
-        }
-
-        return prev.filter((c) => c.id !== connectionId);
-      });
+      if (patchConnections.disconnect(connectionId)) {
+        setConnections(patchConnections.getConnections());
+      }
     },
-    [modules],
+    [patchConnections],
   );
 
   const resetConnections = useCallback(() => {
-    setConnections((prev) => {
-      prev.forEach((c) => {
-        const sourceModule = modules[c.sourceModuleId];
-        const destModule = modules[c.destModuleId];
-        if (sourceModule && destModule) {
-          breakConnection(sourceModule, c.sourceNodeName, destModule, c.destInputName, c.isParam);
-        }
-      });
-      return [];
-    });
-  }, [modules]);
+    clearTimeout(pendingPatchRef.current);
+    pendingPatchRef.current = undefined;
+    patchConnections.clear();
+    setConnections([]);
+  }, [patchConnections]);
 
   const loadPatch = useCallback(
     (patch: Patch) => {
-      // 1. Reset connections
-      setConnections((prev) => {
-        prev.forEach((c) => {
-          const sourceModule = modules[c.sourceModuleId];
-          const destModule = modules[c.destModuleId];
-          if (sourceModule && destModule) {
-            breakConnection(sourceModule, c.sourceNodeName, destModule, c.destInputName, c.isParam);
-          }
-        });
-        return [];
-      });
+      resetConnections();
 
-      // 2. Restore module states
-      if (patch.modules) {
-        Object.entries(patch.modules).forEach(([id, state]) => {
-          const mod = modules[id];
-          if (mod && mod.setState) {
-            mod.setState(state);
-          }
-        });
+      for (const [id, state] of Object.entries(patch.modules ?? {})) {
+        modulesRef.current[id]?.setState?.(state);
       }
 
-      // 3. Restore connections
-      setTimeout(() => {
-        const newConnections: Connection[] = [];
-
-        if (patch.connections) {
-          patch.connections.forEach((c) => {
-            const sourceModule = modules[c.sourceId];
-            const destModule = modules[c.destId];
-
-            if (sourceModule && destModule) {
-              const isParam = !!destModule.params[c.destInput];
-              const success = makeConnection(
-                sourceModule,
-                c.sourceNode,
-                destModule,
-                c.destInput,
-                isParam,
-              );
-
-              if (success) {
-                newConnections.push({
-                  id: `${c.sourceId}-${c.sourceNode}-${c.destId}-${c.destInput}`,
-                  sourceModuleId: c.sourceId,
-                  sourceNodeName: c.sourceNode,
-                  destModuleId: c.destId,
-                  destInputName: c.destInput,
-                  isParam,
-                });
-              }
-            }
-          });
-        }
-        setConnections(newConnections);
+      // Preserve the delay for module parameters to update before restoring cables.
+      pendingPatchRef.current = setTimeout(() => {
+        pendingPatchRef.current = undefined;
+        patch.connections?.forEach(connectCable);
+        setConnections(patchConnections.getConnections());
       }, 50);
     },
-    [modules],
+    [connectCable, patchConnections, resetConnections],
   );
 
   const restoreDefaultPatch = useCallback(() => {
     loadPatch(DEFAULT_PATCH);
   }, [loadPatch]);
 
-  // Load default patch on mount
+  // Load the default patch after the initial module registrations settle.
   useEffect(() => {
     if (!hasInitializedRef.current) {
       const timer = setTimeout(() => {
@@ -219,7 +158,7 @@ export const AudioContextProvider: React.FC<AudioContextProviderProps> = ({ chil
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [restoreDefaultPatch]);
+  }, [modules, restoreDefaultPatch]);
 
   const value: AudioContextType = useMemo(
     () => ({
