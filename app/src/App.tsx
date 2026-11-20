@@ -66,7 +66,7 @@ function App() {
               <h1 className="text-zinc-100 text-3xl font-bold tracking-tight">
                 Modular Synthesizer
               </h1>
-              <span className="text-md font-serif text-zinc-500">v2.6</span>
+              <span className="text-md font-serif text-zinc-500">v2.7</span>
             </div>
             <MidiControls>
               <PresetManager />

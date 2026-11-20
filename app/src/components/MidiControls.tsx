@@ -43,6 +43,18 @@ const menuStyle =
 
 const describeSource = ({ channel, cc }: CcSource) => `Channel ${channel}, CC ${cc}`;
 
+function isVisibleFocusTarget(element: Element | null): element is HTMLElement {
+  return (
+    element instanceof HTMLElement &&
+    element !== document.body &&
+    element.isConnected &&
+    !element.matches(":disabled") &&
+    !element.closest("[hidden], [inert]") &&
+    element.getClientRects().length > 0 &&
+    getComputedStyle(element).visibility === "visible"
+  );
+}
+
 function describeInput(state: ReturnType<MidiInputs["getSnapshot"]>) {
   switch (state.kind) {
     case "inactive":
@@ -52,7 +64,7 @@ function describeInput(state: ReturnType<MidiInputs["getSnapshot"]>) {
     case "unavailable":
       return "Web MIDI is unavailable. Use a browser that supports Web MIDI on a secure page.";
     case "blocked":
-      return "MIDI access was blocked. Check your browser’s site permissions and try Enable MIDI again.";
+      return "MIDI access was blocked. Check your browser’s site permissions, then select MIDI again.";
     case "ready":
       switch (state.selection.kind) {
         case "disconnected":
@@ -92,31 +104,54 @@ export function MidiControls({ children }: { children: ReactNode }) {
   const learnButton = useRef<HTMLButtonElement>(null);
   const targetTrigger = useRef<HTMLButtonElement>(null);
   const selectedInputControls = useRef<HTMLDivElement>(null);
-  const wasChoosingParameter = useRef(false);
+  const focusBeforeLearnFinish = useRef<Element | null>(null);
+  const focusBeforeConflict = useRef<Element | null>(null);
   const [open, setOpen] = useState(false);
   const [inputs] = useState(
     () => new MidiInputs({ select: model.selectInput, receive: model.receive }),
   );
   const inputState = useSyncExternalStore(inputs.subscribe, inputs.getSnapshot);
+  const subscribeToLearn = useCallback(
+    (notify: () => void) => {
+      let previousKind = model.getSnapshot().learn.kind;
+      return model.subscribe(() => {
+        const { kind } = model.getSnapshot().learn;
+        // Save focus before React removes the target Select or Radix focuses the modal.
+        if (previousKind === "choose-target" || previousKind === "capture") {
+          const focused = document.activeElement;
+          if (kind === "conflict") focusBeforeConflict.current = focused;
+          if (kind === "learned" || kind === "canceled") {
+            focusBeforeLearnFinish.current = focused === document.body ? null : focused;
+          }
+        }
+        previousKind = kind;
+        notify();
+      });
+    },
+    [model],
+  );
   const { targets, assignments, learn, persisted } = useSyncExternalStore(
-    model.subscribe,
+    subscribeToLearn,
     model.getSnapshot,
   );
   const choosingParameter = learn.kind === "choose-target" || learn.kind === "capture";
-  const focusLearnFallback = useCallback(() => {
-    for (const button of [learnButton.current, inputTrigger.current, headerButton.current]) {
-      if (!button?.isConnected || button.disabled || button.closest("[hidden]")) continue;
-      button.focus();
-      if (document.activeElement === button) return;
+  const restoreLearnFocus = useCallback((original: Element | null = null) => {
+    for (const candidate of [
+      original,
+      learnButton.current,
+      inputTrigger.current,
+      headerButton.current,
+    ]) {
+      if (!isVisibleFocusTarget(candidate)) continue;
+      if (document.activeElement !== candidate) candidate.focus();
+      if (document.activeElement === candidate) return;
     }
   }, []);
-  useEffect(() => {
-    // A conflict owns its own focus until the alert dialog has closed.
-    if (wasChoosingParameter.current && (learn.kind === "learned" || learn.kind === "canceled")) {
-      focusLearnFallback();
-    }
-    wasChoosingParameter.current = choosingParameter;
-  }, [choosingParameter, focusLearnFallback, learn.kind]);
+  useLayoutEffect(() => {
+    const original = focusBeforeLearnFinish.current;
+    focusBeforeLearnFinish.current = null;
+    if (original && !isVisibleFocusTarget(document.activeElement)) restoreLearnFocus(original);
+  }, [learn.kind, restoreLearnFocus]);
   useEffect(() => {
     const unsubscribeInputs = inputs.subscribe(() => {
       const state = inputs.getSnapshot();
@@ -196,7 +231,7 @@ export function MidiControls({ children }: { children: ReactNode }) {
           type="button"
           variant="outline"
           size="sm"
-          className={buttonStyle}
+          className={`${buttonStyle} hidden border-zinc-800 md:inline-flex`}
           aria-expanded={open}
           aria-controls={panelId}
           aria-disabled={inputState.kind === "requesting" || undefined}
@@ -210,7 +245,7 @@ export function MidiControls({ children }: { children: ReactNode }) {
             if (!ready) void inputs.enable();
           }}
         >
-          {ready ? "MIDI" : "Enable MIDI"}
+          MIDI
         </Button>
       </div>
       <p role="status" className="sr-only">
@@ -301,7 +336,7 @@ export function MidiControls({ children }: { children: ReactNode }) {
                         if (kind === "choose-target" || kind === "capture") return;
                         event.preventDefault();
                         if (kind !== "conflict" && document.activeElement === document.body) {
-                          focusLearnFallback();
+                          restoreLearnFocus();
                         }
                       }}
                     >
@@ -385,7 +420,9 @@ export function MidiControls({ children }: { children: ReactNode }) {
           className="max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain border-zinc-700 bg-zinc-950 text-zinc-100"
           onCloseAutoFocus={(event) => {
             event.preventDefault();
-            focusLearnFallback();
+            const original = focusBeforeConflict.current;
+            focusBeforeConflict.current = null;
+            restoreLearnFocus(original);
           }}
         >
           <AlertDialogHeader>
