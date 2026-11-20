@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
+import { linearSlider } from "../../midi/parameter";
+import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -15,12 +17,21 @@ interface AmpState {
   gain?: number;
 }
 
+const gainScale = linearSlider({ min: 0, max: 1, step: 0.01 });
+
 export const Amp: React.FC<AmpProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const defaultValues =
     (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AmpState) || {};
 
-  const [gain, setGain] = useState(defaultValues.gain ?? 0.5);
+  const {
+    value: gain,
+    setFromPatch: setGainFromPatch,
+    slider: gainSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "gain", label: "Output Gain", scale: gainScale },
+    defaultValues.gain ?? 0.5,
+  );
 
   const [nodes, setNodes] = useState<{ gain: GainNode } | null>(null);
   const nodesRef = useRef<{ gain: GainNode } | null>(null);
@@ -69,12 +80,12 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
             },
             getState: () => ({ gain: gainRef.current }),
             setState: (state: Record<string, unknown>) => {
-              const s = state as unknown as AmpState;
-              if (s.gain !== undefined) setGain(s.gain);
+              if (typeof state.gain === "number" && Number.isFinite(state.gain))
+                setGainFromPatch(state.gain);
             },
           }
         : null,
-    [nodes],
+    [nodes, setGainFromPatch],
   );
 
   useAudioModule(id, moduleDef);
@@ -93,14 +104,7 @@ export const Amp: React.FC<AmpProps> = ({ id, name }) => {
             <Label>Output Gain</Label>
             <span>{Math.round(gain * 100)}%</span>
           </div>
-          <Slider
-            value={[gain]}
-            min={0}
-            max={1}
-            step={0.01}
-            onValueChange={(v) => setGain(v[0])}
-            className="[&_.absolute]:bg-amp"
-          />
+          <Slider {...gainSlider} className="[&_.absolute]:bg-amp" />
         </div>
       </CardContent>
     </Card>

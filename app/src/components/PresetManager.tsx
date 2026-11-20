@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAudioContext } from "../context/AudioContext";
 import { defaultPresets } from "../data/presets";
 import type { Patch } from "../audio/types";
+import { getLocalPreference, setLocalPreference } from "../lib/local-preferences";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -37,7 +38,7 @@ export const PresetManager: React.FC = () => {
   const [newPresetName, setNewPresetName] = useState("");
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(
-    () => !localStorage.getItem("synth_tooltip_dismissed"),
+    () => !getLocalPreference("synth_tooltip_dismissed"),
   );
 
   const requestAudioResume = () => {
@@ -47,7 +48,7 @@ export const PresetManager: React.FC = () => {
   // Dismiss tooltip and store setting in localStorage
   const dismissTooltip = () => {
     setShowTooltip(false);
-    localStorage.setItem("synth_tooltip_dismissed", "true");
+    setLocalPreference({ key: "synth_tooltip_dismissed", value: "true" });
     window.dispatchEvent(new Event("load_tooltip_dismissed"));
   };
 

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
-import { linearToLog, logToLinear } from "../../audio/scales";
+import { logarithmicSlider } from "../../midi/parameter";
+import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -19,14 +20,37 @@ interface FilterState {
   type?: BiquadFilterType;
 }
 
+const cutoffScale = logarithmicSlider({ min: 20, max: 20000 });
+const resonanceScale = logarithmicSlider({ min: 0.1, max: 20 });
+
 export const Filter: React.FC<FilterProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const defaultValues =
     (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as FilterState) ||
     {};
 
-  const [cutoff, setCutoff] = useState(defaultValues.cutoff ?? 1000);
-  const [res, setRes] = useState(defaultValues.res ?? 1);
+  const {
+    value: cutoff,
+    setFromPatch: setCutoffFromPatch,
+    slider: cutoffSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "cutoff", label: "Cutoff", scale: cutoffScale },
+    defaultValues.cutoff ?? 1000,
+  );
+  const {
+    value: res,
+    setFromPatch: setResFromPatch,
+    slider: resonanceSlider,
+  } = useContinuousParameter(
+    {
+      moduleId: id,
+      moduleName: name,
+      parameterId: "res",
+      label: "Resonance",
+      scale: resonanceScale,
+    },
+    defaultValues.res ?? 1,
+  );
   const [type, setType] = useState<BiquadFilterType>(
     (defaultValues.type as BiquadFilterType) ?? "lowpass",
   );
@@ -108,13 +132,14 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
             }),
             setState: (state: Record<string, unknown>) => {
               const s = state as unknown as FilterState;
-              if (s.cutoff !== undefined) setCutoff(s.cutoff);
-              if (s.res !== undefined) setRes(s.res); // Changed from s.resonance and setResonance to s.res and setRes for consistency with FilterState and existing state setter
+              if (typeof s.cutoff === "number" && Number.isFinite(s.cutoff))
+                setCutoffFromPatch(s.cutoff);
+              if (typeof s.res === "number" && Number.isFinite(s.res)) setResFromPatch(s.res);
               if (s.type !== undefined) setType(s.type);
             },
           }
         : null,
-    [nodes],
+    [nodes, setCutoffFromPatch, setResFromPatch],
   );
 
   useAudioModule(id, moduleDef);
@@ -132,14 +157,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
             <Label>Cutoff</Label>
             <span>{Math.round(cutoff)} Hz</span>
           </div>
-          <Slider
-            value={[logToLinear(cutoff, 20, 20000)]}
-            min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setCutoff(linearToLog(v[0], 20, 20000))}
-            className="[&_.absolute]:bg-filter"
-          />
+          <Slider {...cutoffSlider} className="[&_.absolute]:bg-filter" />
         </div>
 
         <div className="space-y-2">
@@ -147,14 +165,7 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
             <Label>Resonance</Label>
             <span>{res.toFixed(2)}</span>
           </div>
-          <Slider
-            value={[logToLinear(res, 0.1, 20)]}
-            min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setRes(linearToLog(v[0], 0.1, 20))}
-            className="[&_.absolute]:bg-filter"
-          />
+          <Slider {...resonanceSlider} className="[&_.absolute]:bg-filter" />
         </div>
 
         <div className="space-y-2">
