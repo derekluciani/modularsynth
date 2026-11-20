@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
+import { linearSlider } from "../../midi/parameter";
+import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -31,6 +33,9 @@ function makeDistortionCurve(amount: number) {
   return curve;
 }
 
+const driveScale = linearSlider({ min: 0, max: 5, step: 0.01 });
+const amountScale = linearSlider({ min: 0, max: 100, step: 1 });
+
 export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const defaultValues =
@@ -38,9 +43,22 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
       id as keyof typeof DEFAULT_PATCH.modules
     ] as unknown as DistortionState) || {};
 
-  // Params
-  const [drive, setDrive] = useState(defaultValues.drive ?? 0); // Pre-gain (0 to 5)
-  const [amount, setAmount] = useState(defaultValues.amount ?? 0); // Curve amount (0 to 100)
+  const {
+    value: drive,
+    setFromPatch: setDriveFromPatch,
+    slider: driveSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "drive", label: "Drive", scale: driveScale },
+    defaultValues.drive ?? 0,
+  );
+  const {
+    value: amount,
+    setFromPatch: setAmountFromPatch,
+    slider: amountSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "amount", label: "Amount", scale: amountScale },
+    defaultValues.amount ?? 0,
+  );
   const [oversample, setOversample] = useState<OverSampleType>(
     (defaultValues.oversample as OverSampleType) ?? "none",
   );
@@ -140,13 +158,15 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
             }),
             setState: (state: Record<string, unknown>) => {
               const s = state as unknown as DistortionState;
-              if (s.drive !== undefined) setDrive(s.drive);
-              if (s.amount !== undefined) setAmount(s.amount);
+              if (typeof s.drive === "number" && Number.isFinite(s.drive))
+                setDriveFromPatch(s.drive);
+              if (typeof s.amount === "number" && Number.isFinite(s.amount))
+                setAmountFromPatch(s.amount);
               if (s.oversample !== undefined) setOversample(s.oversample);
             },
           }
         : null,
-    [nodes],
+    [nodes, setDriveFromPatch, setAmountFromPatch],
   );
 
   useAudioModule(id, moduleDef);
@@ -165,14 +185,7 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
             <Label>Drive</Label>
             <span>{drive.toFixed(2)}</span>
           </div>
-          <Slider
-            value={[drive]}
-            min={0}
-            max={5}
-            step={0.01}
-            onValueChange={(v) => setDrive(v[0])}
-            className="[&_.absolute]:bg-dist"
-          />
+          <Slider {...driveSlider} className="[&_.absolute]:bg-dist" />
         </div>
 
         {/* Amount Control */}
@@ -181,14 +194,7 @@ export const Distortion: React.FC<DistortionProps> = ({ id, name }) => {
             <Label>Amount</Label>
             <span>{amount}</span>
           </div>
-          <Slider
-            value={[amount]}
-            min={0}
-            max={100}
-            step={1}
-            onValueChange={(v) => setAmount(v[0])}
-            className="[&_.absolute]:bg-dist"
-          />
+          <Slider {...amountSlider} className="[&_.absolute]:bg-dist" />
         </div>
 
         {/* Oversample Control */}

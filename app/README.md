@@ -9,6 +9,12 @@ vp run dev
 
 Open the local URL printed by the dev server. Press `Ctrl+C` to stop it.
 
+## MIDI Learn
+
+On a secure page in a browser that supports Web MIDI, select **MIDI** in the header and choose a connected input. The button is hidden in narrow layouts. Select **Learn**, choose a synth parameter, then move a knob or fader that sends an absolute MIDI CC. MIDI permission does not start audio.
+
+Assignments are stored in this browser for each input and are shared across presets. Learn the parameter again to rebind it, or use **Remove** next to the assignment. After a preset load or a direct slider edit, move the hardware control to meet or cross the on-screen position before it takes over. If a controller disconnects, select it again to resume using its assignments.
+
 ## Before committing
 
 ```sh

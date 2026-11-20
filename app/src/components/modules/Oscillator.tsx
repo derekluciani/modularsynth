@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
-import { linearToLog, logToLinear } from "../../audio/scales";
+import { linearSlider, logarithmicSlider } from "../../midi/parameter";
+import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -19,6 +20,9 @@ interface OscillatorState {
   level?: number;
 }
 
+const pitchScale = logarithmicSlider({ min: 20, max: 3000 });
+const levelScale = linearSlider({ min: 0, max: 1, step: 0.01 });
+
 export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const defaultValues =
@@ -26,11 +30,25 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
       id as keyof typeof DEFAULT_PATCH.modules
     ] as unknown as OscillatorState) || {};
 
-  const [freq, setFreq] = useState(defaultValues.freq ?? 440);
+  const {
+    value: freq,
+    setFromPatch: setFreqFromPatch,
+    slider: pitchSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "freq", label: "Pitch", scale: pitchScale },
+    defaultValues.freq ?? 440,
+  );
   const [type, setType] = useState<OscillatorType>(
     (defaultValues.type as OscillatorType) ?? "sine",
   );
-  const [level, setLevel] = useState(defaultValues.level ?? 0.5);
+  const {
+    value: level,
+    setFromPatch: setLevelFromPatch,
+    slider: levelSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "level", label: "Level", scale: levelScale },
+    defaultValues.level ?? 0.5,
+  );
 
   const [nodes, setNodes] = useState<{ osc: OscillatorNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
@@ -125,16 +143,17 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             }),
             setState: (state: Record<string, unknown>) => {
               const s = state as unknown as OscillatorState;
-              if (s.freq !== undefined) setFreq(s.freq);
+              if (typeof s.freq === "number" && Number.isFinite(s.freq)) setFreqFromPatch(s.freq);
               if (s.type !== undefined) setType(s.type);
               // if (s.unison !== undefined) setUnison(s.unison); // These lines were commented out in the original request, but added for completeness based on the instruction.
               // if (s.detune !== undefined) setDetune(s.detune); // These lines were commented out in the original request, but added for completeness based on the instruction.
-              if (s.level !== undefined) setLevel(s.level);
+              if (typeof s.level === "number" && Number.isFinite(s.level))
+                setLevelFromPatch(s.level);
             },
           }
         : null,
-    [nodes],
-  ); // Removed state dependencies
+    [nodes, setFreqFromPatch, setLevelFromPatch],
+  );
 
   // Register module
   useAudioModule(id, moduleDef);
@@ -153,14 +172,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             <Label>Pitch</Label>
             <span>{Math.round(freq)} Hz</span>
           </div>
-          <Slider
-            value={[logToLinear(freq, 20, 3000)]}
-            min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setFreq(linearToLog(v[0], 20, 3000))}
-            className="[&_.absolute]:bg-osc"
-          />
+          <Slider {...pitchSlider} className="[&_.absolute]:bg-osc" />
         </div>
 
         {/* Level */}
@@ -169,14 +181,7 @@ export const Oscillator: React.FC<OscillatorProps> = ({ id, name }) => {
             <Label>Level</Label>
             <span>{Math.round(level * 100)}%</span>
           </div>
-          <Slider
-            value={[level]}
-            min={0}
-            max={1}
-            step={0.01}
-            onValueChange={(v) => setLevel(v[0])}
-            className="[&_.absolute]:bg-osc"
-          />
+          <Slider {...levelSlider} className="[&_.absolute]:bg-osc" />
         </div>
 
         {/* Shape */}

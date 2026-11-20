@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
 import { dbToGain } from "../../audio/scales";
+import { getLocalPreference, setLocalPreference } from "../../lib/local-preferences";
+import { linearSlider } from "../../midi/parameter";
+import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -19,14 +22,37 @@ interface AudioOutState {
   isMuted?: boolean;
 }
 
+const volumeScale = linearSlider({ min: -60, max: 0, step: 0.5 });
+const panScale = linearSlider({ min: -1, max: 1, step: 0.1 });
+
 export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   const { audioCtx, analyserNode } = useAudioContext();
   const defaultValues =
     (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as AudioOutState) ||
     {};
 
-  const [volume, setVolume] = useState(defaultValues.volume ?? -6); // dB
-  const [pan, setPan] = useState(defaultValues.pan ?? 0);
+  const {
+    value: volume,
+    setFromPatch: setVolumeFromPatch,
+    slider: volumeSlider,
+  } = useContinuousParameter(
+    {
+      moduleId: id,
+      moduleName: "Audio Out",
+      parameterId: "volume",
+      label: "Master Volume",
+      scale: volumeScale,
+    },
+    defaultValues.volume ?? -6,
+  );
+  const {
+    value: pan,
+    setFromPatch: setPanFromPatch,
+    slider: panSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: "Audio Out", parameterId: "pan", label: "Pan", scale: panScale },
+    defaultValues.pan ?? 0,
+  );
   const [isMuted, setIsMuted] = useState(defaultValues.isMuted ?? false);
 
   // State for showing the speaker play/pause explanation tooltip
@@ -34,14 +60,14 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
 
   // Check tooltip visibility on mount and listen to dismissal events from the Load tooltip
   useEffect(() => {
-    const isLoadDismissed = localStorage.getItem("synth_tooltip_dismissed") === "true";
-    const isSpeakerDismissed = localStorage.getItem("speaker_tooltip_dismissed") === "true";
+    const isLoadDismissed = getLocalPreference("synth_tooltip_dismissed") === "true";
+    const isSpeakerDismissed = getLocalPreference("speaker_tooltip_dismissed") === "true";
     if (isLoadDismissed && !isSpeakerDismissed) {
       setShowSpeakerTooltip(true);
     }
 
     const handleLoadTooltipDismissed = () => {
-      const dismissed = localStorage.getItem("speaker_tooltip_dismissed") === "true";
+      const dismissed = getLocalPreference("speaker_tooltip_dismissed") === "true";
       if (!dismissed) {
         setShowSpeakerTooltip(true);
       }
@@ -56,7 +82,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
   // Helper to dismiss Speaker tooltip and store in localStorage
   const dismissSpeakerTooltip = () => {
     setShowSpeakerTooltip(false);
-    localStorage.setItem("speaker_tooltip_dismissed", "true");
+    setLocalPreference({ key: "speaker_tooltip_dismissed", value: "true" });
   };
 
   const [nodes, setNodes] = useState<{ panner: StereoPannerNode; gain: GainNode } | null>(null);
@@ -170,13 +196,14 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             }),
             setState: (state: Record<string, unknown>) => {
               const s = state as unknown as AudioOutState;
-              if (s.volume !== undefined) setVolume(s.volume);
-              if (s.pan !== undefined) setPan(s.pan);
+              if (typeof s.volume === "number" && Number.isFinite(s.volume))
+                setVolumeFromPatch(s.volume);
+              if (typeof s.pan === "number" && Number.isFinite(s.pan)) setPanFromPatch(s.pan);
               if (s.isMuted !== undefined) setIsMuted(s.isMuted);
             },
           }
         : null,
-    [nodes],
+    [nodes, setVolumeFromPatch, setPanFromPatch],
   );
 
   // Register module
@@ -224,15 +251,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             <Label>Master Volume</Label>
             <span>{volume} dB</span>
           </div>
-          {/* Vertical Slider attempt or just horizontal? Requirements didn't specify orientation, sticking to horizontal for consistency with other modules for now */}
-          <Slider
-            value={[volume]}
-            min={-60}
-            max={0}
-            step={0.5}
-            onValueChange={(v) => setVolume(v[0])}
-            className="[&_.absolute]:bg-speaker"
-          />
+          <Slider {...volumeSlider} className="[&_.absolute]:bg-speaker" />
         </div>
 
         {/* Pan */}
@@ -241,14 +260,7 @@ export const AudioOut: React.FC<AudioOutProps> = ({ id }) => {
             <Label>Pan</Label>
             <span>{pan.toFixed(2)}</span>
           </div>
-          <Slider
-            value={[pan]}
-            min={-1}
-            max={1}
-            step={0.1}
-            onValueChange={(v) => setPan(v[0])}
-            className="[&_.absolute]:bg-speaker"
-          />
+          <Slider {...panSlider} className="[&_.absolute]:bg-speaker" />
         </div>
       </CardContent>
     </Card>

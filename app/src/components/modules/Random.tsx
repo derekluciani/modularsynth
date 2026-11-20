@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
-import { linearToLog, logToLinear } from "../../audio/scales";
+import { logarithmicSlider } from "../../midi/parameter";
+import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -17,14 +18,31 @@ interface RandomState {
   level?: number;
 }
 
+const rateScale = logarithmicSlider({ min: 0.1, max: 20 });
+const levelScale = logarithmicSlider({ min: 0.001, max: 1000, zero: true });
+
 export const Random: React.FC<RandomProps> = ({ id, name }) => {
   const { audioCtx, isWorkletLoaded } = useAudioContext();
   const defaultValues =
     (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as RandomState) ||
     {};
 
-  const [rate, setRate] = useState(defaultValues.rate ?? 1);
-  const [level, setLevel] = useState(defaultValues.level ?? 0.5);
+  const {
+    value: rate,
+    setFromPatch: setRateFromPatch,
+    slider: rateSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "rate", label: "Rate", scale: rateScale },
+    defaultValues.rate ?? 1,
+  );
+  const {
+    value: level,
+    setFromPatch: setLevelFromPatch,
+    slider: levelSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "level", label: "Level", scale: levelScale },
+    defaultValues.level ?? 0.5,
+  );
 
   const [nodes, setNodes] = useState<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
   const nodesRef = useRef<{ worklet: AudioWorkletNode; gain: GainNode } | null>(null);
@@ -99,18 +117,14 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             },
             getState: () => ({ rate: rateRef.current, level: levelRef.current }),
             setState: (state: Record<string, unknown>) => {
-              const s = state as unknown as RandomState;
-              if (s.rate !== undefined) setRate(s.rate);
-              // Note: s.prob and s.smooth are not defined in RandomState or used in this component.
-              // If these are intended to be new parameters, they need to be added to RandomState,
-              // component state, and UI. For now, they are included as per the instruction.
-              // if (s.prob !== undefined) setProb(s.prob);
-              // if (s.smooth !== undefined) setSmooth(s.smooth);
-              if (s.level !== undefined) setLevel(s.level); // Retaining level setter as it exists in the original component
+              if (typeof state.rate === "number" && Number.isFinite(state.rate))
+                setRateFromPatch(state.rate);
+              if (typeof state.level === "number" && Number.isFinite(state.level))
+                setLevelFromPatch(state.level);
             },
           }
         : null,
-    [nodes],
+    [nodes, setRateFromPatch, setLevelFromPatch],
   );
 
   useAudioModule(id, moduleDef);
@@ -131,14 +145,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             <Label>Rate</Label>
             <span>{rate.toFixed(2)} Hz</span>
           </div>
-          <Slider
-            value={[logToLinear(rate, 0.1, 20)]}
-            min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setRate(linearToLog(v[0], 0.1, 20))}
-            className="[&_.absolute]:bg-rand"
-          />
+          <Slider {...rateSlider} className="[&_.absolute]:bg-rand" />
         </div>
 
         <div className="space-y-2">
@@ -146,14 +153,7 @@ export const Random: React.FC<RandomProps> = ({ id, name }) => {
             <Label>Level</Label>
             <span>{level === 0 ? "0" : level < 1 ? level.toFixed(3) : Math.round(level)}</span>
           </div>
-          <Slider
-            value={[level === 0 ? 0 : logToLinear(level, 0.001, 1000)]}
-            min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setLevel(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))}
-            className="[&_.absolute]:bg-rand"
-          />
+          <Slider {...levelSlider} className="[&_.absolute]:bg-rand" />
         </div>
       </CardContent>
     </Card>

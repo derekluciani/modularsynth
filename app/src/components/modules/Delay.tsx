@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
-import { linearToLog, logToLinear } from "../../audio/scales";
+import { linearSlider, logarithmicSlider } from "../../midi/parameter";
+import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -17,14 +18,37 @@ interface DelayState {
   feedback?: number;
 }
 
+const timeScale = logarithmicSlider({ min: 0.01, max: 2 });
+const feedbackScale = linearSlider({ min: 0, max: 0.9, step: 0.01 });
+
 export const Delay: React.FC<DelayProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const defaultValues =
     (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as DelayState) ||
     {};
 
-  const [time, setTime] = useState(defaultValues.time ?? 0.3);
-  const [feedback, setFeedback] = useState(defaultValues.feedback ?? 0.4);
+  const {
+    value: time,
+    setFromPatch: setTimeFromPatch,
+    slider: timeSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "time", label: "Time", scale: timeScale },
+    defaultValues.time ?? 0.3,
+  );
+  const {
+    value: feedback,
+    setFromPatch: setFeedbackFromPatch,
+    slider: feedbackSlider,
+  } = useContinuousParameter(
+    {
+      moduleId: id,
+      moduleName: name,
+      parameterId: "feedback",
+      label: "Feedback",
+      scale: feedbackScale,
+    },
+    defaultValues.feedback ?? 0.4,
+  );
 
   const [nodes, setNodes] = useState<{
     delay: DelayNode;
@@ -135,13 +159,14 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             },
             getState: () => ({ time: timeRef.current, feedback: feedbackRef.current }),
             setState: (state: Record<string, unknown>) => {
-              const s = state as unknown as DelayState;
-              if (s.time !== undefined) setTime(s.time);
-              if (s.feedback !== undefined) setFeedback(s.feedback);
+              if (typeof state.time === "number" && Number.isFinite(state.time))
+                setTimeFromPatch(state.time);
+              if (typeof state.feedback === "number" && Number.isFinite(state.feedback))
+                setFeedbackFromPatch(state.feedback);
             },
           }
         : null,
-    [nodes],
+    [nodes, setTimeFromPatch, setFeedbackFromPatch],
   );
 
   useAudioModule(id, moduleDef);
@@ -159,14 +184,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             <Label>Time</Label>
             <span>{time.toFixed(2)} s</span>
           </div>
-          <Slider
-            value={[logToLinear(time, 0.01, 2.0)]}
-            min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setTime(linearToLog(v[0], 0.01, 2.0))}
-            className="[&_.absolute]:bg-delay"
-          />
+          <Slider {...timeSlider} className="[&_.absolute]:bg-delay" />
         </div>
 
         <div className="space-y-2">
@@ -174,14 +192,7 @@ export const Delay: React.FC<DelayProps> = ({ id, name }) => {
             <Label>Feedback</Label>
             <span>{feedback.toFixed(2)}</span>
           </div>
-          <Slider
-            value={[feedback]}
-            min={0}
-            max={0.9}
-            step={0.01}
-            onValueChange={(v) => setFeedback(v[0])}
-            className="[&_.absolute]:bg-delay"
-          />
+          <Slider {...feedbackSlider} className="[&_.absolute]:bg-delay" />
         </div>
       </CardContent>
     </Card>

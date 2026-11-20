@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
-import { linearToLog, logToLinear } from "../../audio/scales";
+import { logarithmicSlider } from "../../midi/parameter";
+import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -19,13 +20,30 @@ interface LFOState {
   type?: OscillatorType;
 }
 
+const rateScale = logarithmicSlider({ min: 0.1, max: 12 });
+const amountScale = logarithmicSlider({ min: 0.001, max: 1000, zero: true });
+
 export const LFO: React.FC<LFOProps> = ({ id, name }) => {
   const { audioCtx } = useAudioContext();
   const defaultValues =
     (DEFAULT_PATCH.modules[id as keyof typeof DEFAULT_PATCH.modules] as unknown as LFOState) || {};
 
-  const [freq, setFreq] = useState(defaultValues.freq ?? 1); // Hz
-  const [amount, setAmount] = useState(defaultValues.amount ?? 0.5); // Amplitude
+  const {
+    value: freq,
+    setFromPatch: setFreqFromPatch,
+    slider: rateSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "freq", label: "Rate", scale: rateScale },
+    defaultValues.freq ?? 1,
+  );
+  const {
+    value: amount,
+    setFromPatch: setAmountFromPatch,
+    slider: amountSlider,
+  } = useContinuousParameter(
+    { moduleId: id, moduleName: name, parameterId: "amount", label: "Amount", scale: amountScale },
+    defaultValues.amount ?? 0.5,
+  );
   const [type, setType] = useState<OscillatorType>(
     (defaultValues.type as OscillatorType) ?? "sine",
   );
@@ -127,13 +145,14 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
             }),
             setState: (state: Record<string, unknown>) => {
               const s = state as unknown as LFOState;
-              if (s.freq !== undefined) setFreq(s.freq);
-              if (s.amount !== undefined) setAmount(s.amount);
+              if (typeof s.freq === "number" && Number.isFinite(s.freq)) setFreqFromPatch(s.freq);
+              if (typeof s.amount === "number" && Number.isFinite(s.amount))
+                setAmountFromPatch(s.amount);
               if (s.type !== undefined) setType(s.type);
             },
           }
         : null,
-    [nodes],
+    [nodes, setFreqFromPatch, setAmountFromPatch],
   );
   useAudioModule(id, moduleDef);
 
@@ -156,14 +175,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
             <Label>Rate</Label>
             <span>{freq.toFixed(2)} Hz</span>
           </div>
-          <Slider
-            value={[logToLinear(freq, 0.1, 12)]}
-            min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setFreq(linearToLog(v[0], 0.1, 12))}
-            className="[&_.absolute]:bg-lfo"
-          />
+          <Slider {...rateSlider} className="[&_.absolute]:bg-lfo" />
         </div>
 
         <div className="space-y-2">
@@ -171,14 +183,7 @@ export const LFO: React.FC<LFOProps> = ({ id, name }) => {
             <Label>Amount</Label>
             <span>{amount === 0 ? "0" : amount < 1 ? amount.toFixed(3) : Math.round(amount)}</span>
           </div>
-          <Slider
-            value={[amount === 0 ? 0 : logToLinear(amount, 0.001, 1000)]}
-            min={0}
-            max={1}
-            step={0.001}
-            onValueChange={(v) => setAmount(v[0] === 0 ? 0 : linearToLog(v[0], 0.001, 1000))}
-            className="[&_.absolute]:bg-lfo"
-          />
+          <Slider {...amountSlider} className="[&_.absolute]:bg-lfo" />
         </div>
 
         <div className="space-y-2">
