@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -56,6 +57,10 @@ function describeInput(state: ReturnType<MidiInputs["getSnapshot"]>) {
       switch (state.selection.kind) {
         case "disconnected":
           return `${state.selection.input.name} disconnected. Assignments are kept. Select an input to continue.${state.inputs.length ? "" : " No MIDI inputs are connected."}`;
+        case "opening":
+          return `Opening ${state.selection.input.name}…`;
+        case "failed":
+          return `Could not open ${state.selection.input.name}. Select an input to try again.`;
         case "selected": {
           const selected = state.selection.input;
           return `Listening to ${state.inputs.find(({ id }) => id === selected.id)?.name ?? selected.name}.`;
@@ -86,9 +91,8 @@ export function MidiControls({ children }: { children: ReactNode }) {
   const inputTrigger = useRef<HTMLButtonElement>(null);
   const learnButton = useRef<HTMLButtonElement>(null);
   const targetTrigger = useRef<HTMLButtonElement>(null);
-  const learnSteps = useRef<HTMLDivElement>(null);
   const selectedInputControls = useRef<HTMLDivElement>(null);
-  const dialogInvoker = useRef<HTMLElement | null>(null);
+  const wasChoosingParameter = useRef(false);
   const [open, setOpen] = useState(false);
   const [inputs] = useState(
     () => new MidiInputs({ select: model.selectInput, receive: model.receive }),
@@ -98,24 +102,22 @@ export function MidiControls({ children }: { children: ReactNode }) {
     model.subscribe,
     model.getSnapshot,
   );
+  const choosingParameter = learn.kind === "choose-target" || learn.kind === "capture";
+  const focusLearnFallback = useCallback(() => {
+    for (const button of [learnButton.current, inputTrigger.current, headerButton.current]) {
+      if (!button?.isConnected || button.disabled || button.closest("[hidden]")) continue;
+      button.focus();
+      if (document.activeElement === button) return;
+    }
+  }, []);
   useEffect(() => {
-    // Restore focus before a hardware-driven transition hides a focused control.
-    let previous = model.getSnapshot().learn.kind;
-    const unsubscribeLearn = model.subscribe(() => {
-      const { kind } = model.getSnapshot().learn;
-      if (previous === "capture") {
-        const focused = document.activeElement;
-        if (kind === "learned" && learnSteps.current?.contains(focused))
-          learnButton.current?.focus();
-        if (kind === "conflict") {
-          dialogInvoker.current =
-            focused instanceof HTMLElement && !learnSteps.current?.contains(focused)
-              ? focused
-              : null;
-        }
-      }
-      previous = kind;
-    });
+    // A conflict owns its own focus until the alert dialog has closed.
+    if (wasChoosingParameter.current && (learn.kind === "learned" || learn.kind === "canceled")) {
+      focusLearnFallback();
+    }
+    wasChoosingParameter.current = choosingParameter;
+  }, [choosingParameter, focusLearnFallback, learn.kind]);
+  useEffect(() => {
     const unsubscribeInputs = inputs.subscribe(() => {
       const state = inputs.getSnapshot();
       if (state.kind !== "ready") return;
@@ -127,11 +129,10 @@ export function MidiControls({ children }: { children: ReactNode }) {
       else if (removed) inputTrigger.current?.focus();
     });
     return () => {
-      unsubscribeLearn();
       unsubscribeInputs();
       inputs.dispose();
     };
-  }, [inputs, model]);
+  }, [inputs]);
   useLayoutEffect(() => {
     if (learn.kind === "choose-target") targetTrigger.current?.focus();
   }, [learn.kind]);
@@ -139,8 +140,9 @@ export function MidiControls({ children }: { children: ReactNode }) {
   const ready = inputState.kind === "ready";
   const selected =
     ready && inputState.selection.kind === "selected" ? inputState.selection.input : null;
-  const picking =
-    learn.kind === "choose-target" || learn.kind === "capture" || learn.kind === "conflict";
+  const opening =
+    ready && inputState.selection.kind === "opening" ? inputState.selection.input : null;
+  const picking = choosingParameter || learn.kind === "conflict";
   const targetGroups = new Map<string, [Target, ...Target[]]>();
   for (const target of targets) {
     const group = targetGroups.get(target.moduleId);
@@ -238,8 +240,8 @@ export function MidiControls({ children }: { children: ReactNode }) {
           <div className="grid max-w-md gap-2">
             <Label htmlFor={inputId}>MIDI input</Label>
             <Select
-              value={selected?.id ?? ""}
-              onValueChange={inputs.select}
+              value={selected?.id ?? opening?.id ?? ""}
+              onValueChange={(id) => void inputs.select(id)}
               disabled={!inputState.inputs.length}
             >
               <SelectTrigger
@@ -280,47 +282,52 @@ export function MidiControls({ children }: { children: ReactNode }) {
                 {learnStatus ||
                   "Learn or rebind an assignment by choosing a parameter, then moving a MIDI knob or fader."}
               </p>
-              <div ref={learnSteps} hidden={!picking} className="max-w-md space-y-2">
-                <Label htmlFor={targetId}>Synth parameter</Label>
-                <Select
-                  value={
-                    learn.kind === "capture"
-                      ? learn.target
-                      : learn.kind === "conflict"
-                        ? learn.next.target
-                        : ""
-                  }
-                  onValueChange={model.choose}
-                >
-                  <SelectTrigger id={targetId} ref={targetTrigger} className={selectStyle}>
-                    <SelectValue placeholder="Select a parameter" />
-                  </SelectTrigger>
-                  <SelectContent className={menuStyle} align="start">
-                    {[...targetGroups].map(([moduleId, group]) => (
-                      <SelectGroup key={moduleId}>
-                        <SelectLabel className="text-zinc-400">{group[0].moduleName}</SelectLabel>
-                        {group.map((target) => (
-                          <SelectItem key={target.id} value={target.id}>
-                            {targetName(target)}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className={buttonStyle}
-                  onClick={() => {
-                    learnButton.current?.focus();
-                    model.cancel();
-                  }}
-                >
-                  Cancel<span className="sr-only"> MIDI Learn</span>
-                </Button>
-              </div>
+              {/* Unmount the Select, including its portal, when the workflow leaves target selection. */}
+              {choosingParameter && (
+                <div className="max-w-md space-y-2">
+                  <Label htmlFor={targetId}>Synth parameter</Label>
+                  <Select
+                    value={learn.kind === "capture" ? learn.target : ""}
+                    onValueChange={model.choose}
+                  >
+                    <SelectTrigger id={targetId} ref={targetTrigger} className={selectStyle}>
+                      <SelectValue placeholder="Select a parameter" />
+                    </SelectTrigger>
+                    <SelectContent
+                      className={menuStyle}
+                      align="start"
+                      onCloseAutoFocus={(event) => {
+                        const { kind } = model.getSnapshot().learn;
+                        if (kind === "choose-target" || kind === "capture") return;
+                        event.preventDefault();
+                        if (kind !== "conflict" && document.activeElement === document.body) {
+                          focusLearnFallback();
+                        }
+                      }}
+                    >
+                      {[...targetGroups].map(([moduleId, group]) => (
+                        <SelectGroup key={moduleId}>
+                          <SelectLabel className="text-zinc-400">{group[0].moduleName}</SelectLabel>
+                          {group.map((target) => (
+                            <SelectItem key={target.id} value={target.id}>
+                              {targetName(target)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={buttonStyle}
+                    onClick={model.cancel}
+                  >
+                    Cancel<span className="sr-only"> MIDI Learn</span>
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold">Assignments</h3>
@@ -378,14 +385,7 @@ export function MidiControls({ children }: { children: ReactNode }) {
           className="max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain border-zinc-700 bg-zinc-950 text-zinc-100"
           onCloseAutoFocus={(event) => {
             event.preventDefault();
-            const invoker = dialogInvoker.current;
-            dialogInvoker.current = null;
-            const fallback =
-              learnButton.current ??
-              (inputTrigger.current?.disabled ? null : inputTrigger.current) ??
-              headerButton.current;
-            if (invoker && invoker !== document.body && invoker.isConnected) invoker.focus();
-            else fallback?.focus();
+            focusLearnFallback();
           }}
         >
           <AlertDialogHeader>

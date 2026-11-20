@@ -6,18 +6,39 @@ import { createParameterControl, linearSlider } from "./parameter";
 
 function fakePort(id: string) {
   let listener: ((event: { data: Uint8Array }) => void) | null = null;
-  return {
+  const port = {
     id,
     name: `Controller ${id}`,
     state: "connected",
+    connection: "closed",
     get onmidimessage() {
       return listener;
     },
     set onmidimessage(handler) {
       listener = handler;
+      if (handler) this.connection = "open"; // Setting the handler implicitly opens the port.
     },
-    close: vi.fn(() => Promise.resolve()),
+    open: vi.fn(() => {
+      port.connection = "open";
+      return Promise.resolve();
+    }),
+    close: vi.fn(() => {
+      port.connection = "closed";
+      return Promise.resolve();
+    }),
+    send(data: Uint8Array) {
+      if (this.connection === "open") listener?.({ data });
+    },
   };
+  return port;
+}
+
+function deferred() {
+  let resolve: (() => void) | undefined;
+  const pending = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { pending, finish: () => resolve?.() };
 }
 
 const statechange = new Event("statechange");
@@ -62,7 +83,7 @@ describe("Web MIDI input lifecycle", () => {
         inputs: [{ id: "a" }, { id: "b" }],
       });
       expect(first.onmidimessage).toBeNull();
-      inputs.select("a");
+      await inputs.select("a");
       const stale = first.onmidimessage;
       expect(stale).toBeTypeOf("function");
       expect(second.onmidimessage).toBeNull();
@@ -71,7 +92,7 @@ describe("Web MIDI input lifecycle", () => {
       stale?.(message);
       expect(model.getSnapshot().assignments).toHaveLength(1);
       expect(changed).not.toHaveBeenCalled();
-      inputs.select("b");
+      await inputs.select("b");
       expect(first.onmidimessage).toBeNull();
       expect(first.close).toHaveBeenCalledOnce();
       expect(second.onmidimessage).toBeTypeOf("function");
@@ -95,7 +116,7 @@ describe("Web MIDI input lifecycle", () => {
       });
       expect(first.onmidimessage).toBeNull();
       expect(second.onmidimessage).toBeNull();
-      inputs.select("a");
+      await inputs.select("a");
       stale?.(message); // An earlier listener on the same port cannot send into a new selection.
       expect(changed).not.toHaveBeenCalled();
       const current = first.onmidimessage;
@@ -103,6 +124,7 @@ describe("Web MIDI input lifecycle", () => {
       expect(changed).toHaveBeenCalledExactlyOnceWith(0.5);
       inputs.dispose();
       expect(first.onmidimessage).toBeNull();
+      await Promise.resolve();
       expect(first.close).toHaveBeenCalledTimes(2);
       ports.clear();
       access.dispatchEvent(statechange);
@@ -112,6 +134,118 @@ describe("Web MIDI input lifecycle", () => {
     } finally {
       inputs.dispose();
       unregister();
+    }
+  });
+
+  it("waits for a delayed close before reopening the same port on A→B→A", async () => {
+    const first = fakePort("a");
+    const second = fakePort("b");
+    const closing = deferred();
+    first.close.mockImplementationOnce(() =>
+      closing.pending.then(() => {
+        first.connection = "closed";
+      }),
+    );
+    const access = Object.assign(new EventTarget(), {
+      inputs: new Map([
+        [first.id, first],
+        [second.id, second],
+      ]),
+    });
+    vi.stubGlobal("navigator", { requestMIDIAccess: () => Promise.resolve(access) });
+    const receive = vi.fn();
+    const inputs = new MidiInputs({ select: vi.fn(), receive });
+    try {
+      await inputs.enable();
+      await inputs.select("a");
+      await inputs.select("b");
+      expect(first.close).toHaveBeenCalledOnce();
+      expect(first.connection).toBe("open"); // Blink still reports open during close.
+      const reopening = inputs.select("a");
+      await Promise.resolve();
+      expect(inputs.getSnapshot()).toMatchObject({
+        selection: { kind: "opening", input: { id: "a" } },
+      });
+      expect(first.open).toHaveBeenCalledOnce();
+      expect(first.onmidimessage).toBeNull();
+      first.send(message.data);
+      second.send(message.data);
+      expect(receive).not.toHaveBeenCalled();
+
+      closing.finish();
+      await reopening;
+      expect(first.open).toHaveBeenCalledTimes(2);
+      expect(inputs.getSnapshot()).toMatchObject({
+        selection: { kind: "selected", input: { id: "a" } },
+      });
+      second.send(message.data);
+      first.send(message.data);
+      expect(receive).toHaveBeenCalledExactlyOnceWith({ input: "a", data: message.data });
+    } finally {
+      closing.finish();
+      inputs.dispose();
+    }
+  });
+
+  it.each(["switch", "disconnect", "dispose"])(
+    "ignores a pending open after %s",
+    async (action) => {
+      const first = fakePort("a");
+      const second = fakePort("b");
+      const opening = deferred();
+      first.open.mockImplementationOnce(() => opening.pending);
+      const access = Object.assign(new EventTarget(), {
+        inputs: new Map([
+          [first.id, first],
+          [second.id, second],
+        ]),
+      });
+      vi.stubGlobal("navigator", { requestMIDIAccess: () => Promise.resolve(access) });
+      const select = vi.fn();
+      const inputs = new MidiInputs({ select, receive: vi.fn() });
+      try {
+        await inputs.enable();
+        const pending = inputs.select("a");
+        await Promise.resolve();
+        expect(first.open).toHaveBeenCalledOnce();
+        if (action === "switch") await inputs.select("b");
+        else if (action === "disconnect") {
+          first.state = "disconnected";
+          access.dispatchEvent(statechange);
+          expect(inputs.getSnapshot()).toMatchObject({ selection: { kind: "disconnected" } });
+        } else inputs.dispose();
+        const snapshot = inputs.getSnapshot();
+        expect(first.close).not.toHaveBeenCalled();
+        opening.finish();
+        await pending;
+        expect(first.onmidimessage).toBeNull();
+        expect(first.close).toHaveBeenCalledOnce();
+        expect(select).not.toHaveBeenCalledWith("a");
+        expect(inputs.getSnapshot()).toBe(snapshot);
+      } finally {
+        opening.finish();
+        inputs.dispose();
+      }
+    },
+  );
+
+  it("lets the user retry after an open failure even if cleanup rejects", async () => {
+    const port = fakePort("a");
+    port.open.mockRejectedValueOnce(new Error("could not open"));
+    port.close.mockRejectedValueOnce(new Error("could not close"));
+    const access = Object.assign(new EventTarget(), { inputs: new Map([[port.id, port]]) });
+    vi.stubGlobal("navigator", { requestMIDIAccess: () => Promise.resolve(access) });
+    const inputs = new MidiInputs({ select: vi.fn(), receive: vi.fn() });
+    try {
+      await inputs.enable();
+      await inputs.select("a");
+      expect(inputs.getSnapshot()).toMatchObject({ selection: { kind: "failed" } });
+      expect(port.onmidimessage).toBeNull();
+      await inputs.select("a");
+      expect(inputs.getSnapshot()).toMatchObject({ selection: { kind: "selected" } });
+      expect(port.onmidimessage).toBeTypeOf("function");
+    } finally {
+      inputs.dispose();
     }
   });
 
