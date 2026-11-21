@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudioContext } from "../../context/AudioContext";
 import { useAudioModule } from "../../audio/useAudioModule";
+import { createFilterCutoffControl, FILTER_CUTOFF_MIN_HZ } from "../../audio/filterCutoff";
 import { logarithmicSlider } from "../../midi/parameter";
 import { useContinuousParameter } from "../../midi/useContinuousParameter";
 import { DEFAULT_PATCH } from "../../audio/defaultPatch";
@@ -20,7 +21,7 @@ interface FilterState {
   type?: BiquadFilterType;
 }
 
-const cutoffScale = logarithmicSlider({ min: 20, max: 20000 });
+const cutoffScale = logarithmicSlider({ min: FILTER_CUTOFF_MIN_HZ, max: 20000 });
 const resonanceScale = logarithmicSlider({ min: 0.1, max: 20 });
 
 export const Filter: React.FC<FilterProps> = ({ id, name }) => {
@@ -55,21 +56,22 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
     (defaultValues.type as BiquadFilterType) ?? "lowpass",
   );
 
-  const [nodes, setNodes] = useState<{ filter: BiquadFilterNode } | null>(null);
-  const nodesRef = useRef<{ filter: BiquadFilterNode } | null>(null);
+  const [nodes, setNodes] = useState<{
+    filter: BiquadFilterNode;
+    cutoffControl: ReturnType<typeof createFilterCutoffControl>;
+  } | null>(null);
 
   useEffect(() => {
     if (!audioCtx) return;
 
     const filter = audioCtx.createBiquadFilter();
     filter.type = type;
-    filter.frequency.value = cutoff;
     filter.Q.value = res;
-
-    nodesRef.current = { filter };
-    setNodes({ filter });
+    const cutoffControl = createFilterCutoffControl({ filter, initialCutoffHz: cutoff });
+    setNodes({ filter, cutoffControl });
 
     return () => {
+      cutoffControl.dispose();
       filter.disconnect();
     };
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -82,10 +84,8 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
   }, [type, nodes]);
 
   useEffect(() => {
-    if (nodes && audioCtx) {
-      nodes.filter.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.01);
-    }
-  }, [cutoff, audioCtx, nodes]);
+    nodes?.cutoffControl.setCutoff(cutoff);
+  }, [cutoff, nodes]);
 
   useEffect(() => {
     if (nodes && audioCtx) {
@@ -115,14 +115,14 @@ export const Filter: React.FC<FilterProps> = ({ id, name }) => {
             type: "Filter" as const,
             inputs: {
               input: nodes.filter,
-              cutoff: nodes.filter.frequency,
+              cutoff: nodes.cutoffControl.modulationInput,
               resonance: nodes.filter.Q,
             },
             outputs: {
               output: nodes.filter,
             },
             params: {
-              cutoff: nodes.filter.frequency,
+              cutoff: nodes.cutoffControl.modulationInput,
               resonance: nodes.filter.Q,
             },
             getState: () => ({
