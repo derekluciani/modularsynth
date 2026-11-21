@@ -23,6 +23,16 @@ vp test --run
 vp run build
 ```
 
+## Filter cutoff regression (#35)
+
+Run `vp run dev` and paste this in the Chromium DevTools console on the app page. It renders the minimal pop reproducer with real Web Audio nodes and checks that cutoff modulation, summing, and cable removal still work. It throws on failure.
+
+```js
+await (await import("/src/audio/filterCutoff.browser.ts")).runFilterCutoffRegression();
+```
+
+To retest by ear, turn playback down, choose **Import** in the header, and select the original patch export. With the LFO 1 → Filter 1 cutoff cable in place, listen for several sweeps at the saved cutoff (~220 Hz), then try 20, 80, 150, and 250 Hz. The filter should still sweep without the periodic sharp pop. Remove the cutoff cable to confirm the sweep stops; reconnect it to confirm the sweep returns.
+
 ## Vite+ command reference
 
 | Command                        | What it does                                                     |
